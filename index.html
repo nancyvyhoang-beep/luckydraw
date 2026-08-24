@@ -318,7 +318,7 @@
             { id: 3, name: "AirPods Pro 2", total: 5, perDraw: 5, wonCount: 0 }
         ];
 
-        let participants = []; // Khởi tạo trống, bắt buộc phải load từ Google Sheets nếu chọn nguồn google
+        let participants = []; 
 
         let allWinnersHistory = [];
         let currentActivePrizeId = 1;
@@ -346,7 +346,6 @@
             document.getElementById('source-file-box').style.display = mode === 'file' ? 'block' : 'none';
         }
 
-        // --- BẮT BUỘC ĐỒNG BỘ DỮ LIỆU TỪ GOOGLE SHEETS KHI BẤM XÁC NHẬN ---
         async function confirmDataSource() {
             if (sourceMode === 'google') {
                 let url = document.getElementById('input-gsheet-url').value.trim();
@@ -380,7 +379,7 @@
             alert("Xác nhận nguồn dữ liệu thành công!");
         }
 
-        // --- ĐỒNG BỘ TOÀN BỘ TỪ GOOGLE SHEETS ---
+        // --- ĐỒNG BỘ TOÀN BỘ TỪ GOOGLE SHEETS & XỬ LÝ KHÔNG ĐỂ DẤU TRỐNG THỪA ---
         async function loadParticipantsFromGoogleSheet() {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return false;
@@ -389,7 +388,26 @@
                 let data = await res.json();
                 
                 if(data.participants && Array.isArray(data.participants) && data.participants.length > 0) {
-                    participants = data.participants.map(p => `${p.maNV} - ${p.hoTen} (${p.boPhan})`);
+                    participants = data.participants.map(p => {
+                        let mainParts = [];
+                        // Chỉ lấy mã nhân viên nếu có thật
+                        if (p.maNV && String(p.maNV).trim() !== "") {
+                            mainParts.push(String(p.maNV).trim());
+                        }
+                        // Lấy họ tên nếu có thật
+                        if (p.hoTen && String(p.hoTen).trim() !== "") {
+                            mainParts.push(String(p.hoTen).trim());
+                        }
+
+                        let textName = mainParts.join(" - ");
+
+                        // Chỉ thêm bộ phận vào ngoặc nếu thực sự có nội dung
+                        if (p.boPhan && String(p.boPhan).trim() !== "") {
+                            return textName ? `${textName} (${String(p.boPhan).trim()})` : String(p.boPhan).trim();
+                        }
+                        return textName;
+                    }).filter(item => item !== ""); // Lọc bỏ các dòng hoàn toàn trống
+
                     document.getElementById('sheet-status-info').innerText = `Trạng thái: Đã tải ${participants.length} nhân viên từ Google Sheets!`;
                 }
                 
