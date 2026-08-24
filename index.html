@@ -72,7 +72,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- Nguồn dữ liệu với 3 tùy chọn -->
+                    <!-- Nguồn dữ liệu -->
                     <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
                         <h2 class="text-base font-bold sync-title border-b border-slate-800 pb-2">📂 1. Tùy Chọn Nguồn Dữ Liệu Tham Gia</h2>
                         <div class="space-y-4">
@@ -332,10 +332,9 @@
             updateAdminStats();
             syncDisplayScreenInfo();
             applyBrandGuidelines();
-            loadParticipantsFromGoogleSheet(); // Tự động đồng bộ Google Sheets khi load trang
+            loadParticipantsFromGoogleSheet(); // Tự động đồng bộ ngay khi load trang
         };
 
-        // --- CHUYỂN ĐỔI 3 TÙY CHỌN NGUỒN DỮ LIỆU ---
         function toggleSourceMode() {
             let mode = document.getElementById('input-source-mode').value;
             sourceMode = mode;
@@ -344,7 +343,6 @@
             document.getElementById('source-file-box').style.display = mode === 'file' ? 'block' : 'none';
         }
 
-        // --- ĐỒNG BỘ TỪ GOOGLE SHEETS ---
         async function loadParticipantsFromGoogleSheet() {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return;
@@ -361,7 +359,6 @@
             }
         }
 
-        // --- ĐẨY KẾT QUẢ LÊN GOOGLE SHEETS ---
         async function pushWinnerToGoogleSheet(prizeName, winnerInfo) {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return;
@@ -392,7 +389,8 @@
             }
         }
 
-        function playSound(type = 'tick') {
+        // --- NÂNG CẤP ÂM THANH QUAY SỐ HỒI HỘP, DỒN DẬP HƠN ---
+        function playSound(type = 'tick', stepRatio = 0.5) {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 let osc = audioCtx.createOscillator();
@@ -401,15 +399,23 @@
                 gain.connect(audioCtx.destination);
                 
                 if (type === 'tick') {
-                    osc.frequency.setValueAtTime(400 + Math.random() * 200, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    // Tần số tăng dần dồn dập về cuối (Arpeggio effect)
+                    let freq = 300 + (stepRatio * 800); 
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                     osc.start();
-                    osc.stop(audioCtx.currentTime + 0.05);
+                    osc.stop(audioCtx.currentTime + 0.04);
                 } else if (type === 'win') {
-                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.4);
+                    // Âm thanh chiến thắng hoành tráng (Hợp âm C Major)
+                    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                        let o = audioCtx.createOscillator();
+                        let g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime + (i * 0.1));
+                        o.start(audioCtx.currentTime + (i * 0.1));
+                        o.stop(audioCtx.currentTime + 0.8);
+                    });
                 }
             } catch(e) {}
         }
@@ -681,6 +687,7 @@
             });
         }
 
+        // --- HIỆU ỨNG QUAY SỐ VỚI ÂM THANH DỒN DẬP TĂNG TỐC ---
         function startSpinningAnimation() {
             if (isRunning) return;
             let activeP = prizes.find(p => p.id == currentActivePrizeId);
@@ -702,12 +709,12 @@
             let countToDraw = Math.min(activeP.perDraw, remainingPrize);
 
             let durationSec = parseFloat(document.getElementById('input-spin-duration').value) || 3;
-            let intervalTime = 60;
-            let totalSteps = Math.max(10, Math.floor((durationSec * 1000) / intervalTime));
+            let totalSteps = Math.max(15, Math.floor((durationSec * 1000) / 50));
             let counter = 0;
 
             let spinInterval = setInterval(() => {
-                playSound('tick');
+                let stepRatio = counter / totalSteps;
+                playSound('tick', stepRatio);
                 rollerBox.style.transform = `translateY(${Math.sin(counter) * 12}px)`;
 
                 if (sourceMode === 'number') {
@@ -726,7 +733,7 @@
                     rollerBox.style.transform = 'translateY(0)';
                     finalizeRound(countToDraw);
                 }
-            }, intervalTime);
+            }, 50);
         }
 
         function finalizeRound(countToDraw) {
