@@ -116,10 +116,10 @@
                                 <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold brand-btn cursor-pointer">
                             </div>
 
-                            <!-- Nút xác nhận nguồn data để đảm bảo không nhầm lẫn -->
+                            <!-- Nút xác nhận nguồn data (Đã rút gọn text) -->
                             <div class="pt-2">
                                 <button onclick="confirmDataSource()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">
-                                    🔒 Xác Nhận Đã Chọn Đúng Nguồn Data Này
+                                    🔒 Xác nhận data
                                 </button>
                                 <p id="confirmed-source-status" class="text-xs text-slate-400 mt-1 italic">Chưa xác nhận nguồn dữ liệu.</p>
                             </div>
@@ -222,39 +222,684 @@
                     <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
                         <h2 class="text-base font-bold sync-title border-b border-slate-800 pb-2">🎮 4. Thực Thi Quay Thưởng</h2>
                         <div class="space-y-3 text-sm">
-                            <div>Chào bạn, tôi đã ghi nhận toàn bộ các yêu cầu cập nhật cho hệ thống sự kiện/minigame của bạn. Dưới đây là phương án xử lý chi tiết cho từng hạng mục:
+                            <div>
+                                <label class="block text-xs opacity-90 mb-1 font-semibold">Tên sự kiện chung:</label>
+                                <input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs opacity-90 mb-1 font-semibold">🎯 Chọn giải đang quay:</label>
+                                <select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full bg-slate-900 border border-indigo-500/60 ring-1 ring-indigo-500/30 rounded-lg p-3 text-sm font-bold text-indigo-200"></select>
+                            </div>
+                            <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1 text-xs opacity-95">
+                                <div class="flex justify-between"><span>Tổng số giải:</span> <span id="info-total-prize" class="font-bold text-amber-400">1</span></div>
+                                <div class="flex justify-between"><span>Đã trúng / Còn lại:</span> <span id="info-won-prize" class="font-bold text-emerald-400">0 / 1</span></div>
+                                <div class="flex justify-between"><span>Số lượng mỗi lượt:</span> <span id="info-per-draw" class="font-bold text-indigo-400">1</span></div>
+                            </div>
+                        </div>
+                        <div class="pt-2 space-y-2">
+                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn font-extrabold py-3.5 rounded-xl shadow-xl transition active:scale-95 text-sm tracking-wide">
+                                🚀 MỞ MÀN HÌNH QUAY & BẮT ĐẦU
+                            </button>
+                            <button onclick="exportResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold py-2.5 rounded-lg transition">
+                                📊 Export DS Trúng Thưởng (CSV)
+                            </button>
+                            <button onclick="resetSystem()" class="w-full bg-slate-900 hover:bg-red-950/40 text-rose-400 text-xs py-2 rounded-lg transition border border-slate-800">
+                                🔄 Reset Toàn Bộ Hệ Thống
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
----
+            </div>
+        </div>
 
-### 1. Tắt hộp thoại Brand Guideline tự động hiện khi mở web
-* **Nguyên nhân:** Có thể logic khởi tạo (initialization) đang bị gọi nhầm hàm hiển thị bảng cấu hình giao diện/brand guideline ngay từ Hook `useEffect` đầu tiên hoặc do giá trị lưu trong `localStorage` chưa được kiểm tra đúng trạng thái `isConfigured`.
-* **Giải pháp:** 
-  * Kiểm tra lại file quản lý state toàn cục hoặc component cha (`App.jsx` hoặc `Layout`).
-  * Thêm điều kiện kiểm tra dữ liệu cấu hình trước khi gọi hàm mở modal:
-    ```javascript
-    // Ví dụ: Chỉ mở khi chưa có brand guideline được lưu
-    const hasBrandConfig = localStorage.getItem('brand_guideline_set');
-    if (!hasBrandConfig) {
-      // setShowBrandModal(true); // Tạm ẩn hoặc xóa gọi hàm này ở trạng thái mặc định
-    }
-    ```
+        <!-- ================= TAB 2: MÀN HÌNH QUAY SỐ (DISPLAY PANEL) ================= -->
+        <div id="tab-display" class="tab-content space-y-6">
+            <div class="glass-panel p-6 md:p-10 rounded-3xl min-h-[580px] flex flex-col justify-between shadow-2xl relative overflow-hidden border border-indigo-500/30">
+                
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-3">
+                    <div class="space-y-1 text-center lg:text-left">
+                        <span id="display-event-badge" class="text-xs uppercase font-extrabold tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 cursor-pointer" ondblclick="openSecretWinnerModal()" title="Double click để mở chế độ chỉ định người thắng ẩn">
+                            TECH SUMMIT 2026
+                        </span>
+                    </div>
 
-### 2. Thêm nút xác nhận chọn nguồn dữ liệu (Data Source)
-* **Mục đích:** Tránh việc người dùng vô tình click nhầm hoặc hệ thống tự động load nhầm tệp dữ liệu khách hàng tham gia.
-* **Cách thực hiện giao diện (UI/UX):**
-  * Sau khi người dùng chọn xong nguồn data (ví dụ: file Excel, danh sách từ Google Sheets hoặc Database), thay vì áp dụng ngay lập tức, hệ thống sẽ hiển thị một **Badge/Card thông tin tóm tắt** kèm nút **"Xác nhận sử dụng nguồn này"**.
-  * Gợi ý bố cục:
-    ```text
-    [Dropdown chọn nguồn: Danh_sach_KH_Thang8.xlsx] 
-    ( ) Đã chọn: 145 khách hàng 
-    [ Nút Xác Nhận Nguồn Data này ] (Disabled các bước tiếp theo nếu chưa bấm nút)
-    ```
+                    <div class="flex flex-wrap items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                        <div class="flex items-center space-x-1 text-xs">
+                            <span class="opacity-90">Giải:</span>
+                            <select id="display-select-prize" onchange="onDisplayPrizeChange()" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-bold text-amber-400">
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-1 text-xs">
+                            <span class="opacity-90">SL/Lượt:</span>
+                            <input type="number" id="display-input-per-draw" min="1" max="50" onchange="onDisplayPerDrawChange()" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-bold text-indigo-300">
+                        </div>
+                        <button onclick="toggleFullScreen()" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded text-xs">⛶ Full</button>
+                        <button onclick="switchTab('control')" class="brand-btn px-2.5 py-1 rounded text-xs font-bold">⚙️ Admin</button>
+                    </div>
+                </div>
 
-### 3. Thay đổi hiệu ứng âm thanh quay số
-* **Định hướng âm thanh mới:** 
-  * **Giai đoạn chờ quay (Spinning):** Sử dụng nhạc nền dồn dập, tiếng trống nhịp nhanh tạo cảm giác hồi hộp, tồi tệ (suspense drumroll).
-  * **Giai đoạn trúng thưởng (Winner):** Chuyển sang âm thanh kèn tò te hoặc tiếng chuông reo vui nhộn, hào hứng.
-* **Cách tích hợp:** Cập nhật lại đường dẫn tệp âm thanh (`.mp3` hoặc `.wav`) trong hàm kích hoạt sự kiện âm thanh (Audio API hoặc thẻ `<audio>`):
-  ```javascript
-  const suspenseAudio = new Audio('/sounds/suspense-drumroll.mp3');
-  const winAudio = new Audio('/sounds/excited-win.mp3');
+                <div class="my-auto py-8 text-center space-y-4 overflow-hidden">
+                    <div id="display-roller-box" class="roller-slot text-4xl md:text-7xl font-black tracking-wider drop-shadow-md min-h-[120px] flex items-center justify-center transition-all">
+                        SẴN SÀNG
+                    </div>
+                    <div id="display-winners-container" class="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto min-h-[80px]"></div>
+                </div>
+
+                <div id="action-buttons-bar" class="hidden flex flex-col sm:flex-row justify-center items-center gap-3 pt-4 border-t border-slate-800/80">
+                    <button onclick="saveAndNext()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center space-x-2">
+                        <span>💾 Lưu kết quả và tiếp tục quay</span>
+                    </button>
+                    <button onclick="discardAndRetry()" class="px-6 py-3 bg-rose-600/80 hover:bg-rose-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center space-x-2">
+                        <span>🗑️ Xoá kết quả & Quay lại giải này</span>
+                    </button>
+                </div>
+
+                <div id="start-draw-container" class="w-full max-w-md mx-auto pt-2">
+                    <button onclick="startSpinningAnimation()" id="btn-start-spin" class="w-full brand-btn font-black text-xl py-4 rounded-2xl shadow-xl transition transform active:scale-95 tracking-wider">
+                        🎲 BẮT ĐẦU QUAY SỐ
+                    </button>
+                </div>
+
+                <div class="w-full flex justify-between items-center text-xs opacity-90 pt-4 border-t border-slate-800/40">
+                    <div>Giải hiện tại: <span id="disp-active-name" class="text-amber-400 font-bold">MacBook Pro M4</span></div>
+                    <div>Đã trúng / Tổng kho: <span id="disp-won-q" class="text-emerald-400 font-bold">0 / 1</span></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Xử Lý Logic -->
+    <script>
+        let prizes = [
+            { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
+            { id: 2, name: "iPhone 17 Pro Max", total: 3, perDraw: 1, wonCount: 0 },
+            { id: 3, name: "AirPods Pro 2", total: 5, perDraw: 5, wonCount: 0 }
+        ];
+
+        let participants = [
+            "EMP001 - Nguyễn Văn An - Phòng Công Nghệ", 
+            "EMP002 - Trần Thị Bình - Phòng Nhân Sự", 
+            "EMP003 - Lê Hoàng Cường - Phòng Kinh Doanh", 
+            "EMP004 - Phạm Thị Dung - Phòng Marketing", 
+            "EMP005 - Hoàng Văn Em - Phòng Tài Chính"
+        ];
+
+        let allWinnersHistory = [];
+        let currentActivePrizeId = 1;
+        let sourceMode = 'google'; 
+        let isRunning = false;
+        let audioCtx = null;
+        let tempCurrentRoundWinners = [];
+        let forcedSecretWinner = "";
+        let isSourceConfirmed = false;
+
+        window.onload = function() {
+            renderPrizesTable();
+            updatePrizeDropdown();
+            updateAdminStats();
+            syncDisplayScreenInfo();
+        };
+
+        function toggleSourceMode() {
+            let mode = document.getElementById('input-source-mode').value;
+            sourceMode = mode;
+            isSourceConfirmed = false;
+            document.getElementById('confirmed-source-status').innerText = "Nguồn dữ liệu đã thay đổi, vui lòng bấm xác nhận lại!";
+            document.getElementById('confirmed-source-status').className = "text-xs text-rose-400 mt-1 italic";
+
+            document.getElementById('source-google-box').style.display = mode === 'google' ? 'block' : 'none';
+            document.getElementById('source-number-box').style.display = mode === 'number' ? 'grid' : 'none';
+            document.getElementById('source-file-box').style.display = mode === 'file' ? 'block' : 'none';
+        }
+
+        function confirmDataSource() {
+            isSourceConfirmed = true;
+            let statusText = "";
+            if (sourceMode === 'google') {
+                statusText = "Đã khóa nguồn: Google Sheets.";
+            } else if (sourceMode === 'number') {
+                let from = document.getElementById('num-from').value;
+                let to = document.getElementById('num-to').value;
+                statusText = `Đã khóa nguồn: Quay số từ ${from} đến ${to}.`;
+            } else {
+                statusText = `Đã khóa nguồn: File CSV (${participants.length} nhân viên).`;
+            }
+            document.getElementById('confirmed-source-status').innerText = `✅ ${statusText}`;
+            document.getElementById('confirmed-source-status').className = "text-xs text-emerald-400 mt-1 font-semibold";
+            alert("Xác nhận nguồn dữ liệu thành công!");
+        }
+
+        async function loadParticipantsFromGoogleSheet() {
+            let url = document.getElementById('input-gsheet-url').value.trim();
+            if(!url) return;
+            try {
+                let res = await fetch(url);
+                let data = await res.json();
+                if(Array.isArray(data) && data.length > 0) {
+                    participants = data.map(p => `${p.maNV} - ${p.hoTen} (${p.boPhan})`);
+                    document.getElementById('sheet-status-info').innerText = `Trạng thái: Đã tải thành công ${participants.length} nhân viên từ Google Sheets!`;
+                    alert(`Đồng bộ thành công ${participants.length} nhân viên từ Google Sheets!`);
+                }
+            } catch(err) {
+                alert("Lỗi kết nối Google Sheets! Hãy kiểm tra lại đường dẫn Web App URL.");
+            }
+        }
+
+        async function pushWinnerToGoogleSheet(prizeName, winnerInfo) {
+            let url = document.getElementById('input-gsheet-url').value.trim();
+            if(!url) return;
+            try {
+                await fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        time: new Date().toLocaleTimeString(),
+                        prizeName: prizeName,
+                        winnerInfo: winnerInfo
+                    })
+                });
+            } catch(e) {}
+        }
+
+        function openSecretWinnerModal() {
+            let currentVal = forcedSecretWinner ? `Đang chỉ định: ${forcedSecretWinner}` : "Không có (Quay ngẫu nhiên)";
+            let input = prompt(`[CHẾ ĐỘ BÍ MẬT - RIGGED DRAW]\nNhập chính xác tên/mã nhân viên muốn ép thắng cho lượt quay tới\n(Trạng thái hiện tại: ${currentVal})\n\nNhập để trống hoặc 'clear' để xóa chỉ định:`, forcedSecretWinner);
+            
+            if (input !== null) {
+                if (input.trim() === "" || input.trim().toLowerCase() === "clear") {
+                    forcedSecretWinner = "";
+                    alert("Đã xóa cấu hình chỉ định! Lượt quay sẽ hoàn toàn ngẫu nhiên.");
+                } else {
+                    forcedSecretWinner = input.trim();
+                    alert(`Đã gán thành công người chiến thắng tiếp theo: "${forcedSecretWinner}"!`);
+                }
+            }
+        }
+
+        function playSound(type = 'tick', stepRatio = 0.5) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'tick') {
+                    let freq = 250 + Math.pow(stepRatio, 2) * 900;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.04);
+                } else if (type === 'win') {
+                    [440, 554.37, 659.25, 880, 1108.73].forEach((f, i) => {
+                        let o = audioCtx.createOscillator();
+                        let g = audioCtx.createGain();
+                        o.type = 'square';
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.08));
+                        o.start(audioCtx.currentTime + (i * 0.08));
+                        o.stop(audioCtx.currentTime + 0.5);
+                    });
+                }
+            } catch(e) {}
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('btn-tab-control').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+            document.getElementById('btn-tab-display').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+
+            if (tabName === 'control') {
+                document.getElementById('tab-control').classList.add('active');
+                document.getElementById('btn-tab-control').className = "px-4 py-2 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
+                updateAdminStats();
+            } else {
+                document.getElementById('tab-display').classList.add('active');
+                document.getElementById('btn-tab-display').className = "px-4 py-2 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
+                syncDisplayScreenInfo();
+            }
+        }
+
+        function goToDisplayAndReady() {
+            if (!isSourceConfirmed) {
+                alert("⚠️ Vui lòng bấm nút 'Xác nhận data' ở phần quản lý nguồn dữ liệu trước khi mở màn hình quay!");
+                return;
+            }
+            switchTab('display');
+        }
+
+        function toggleBgInputs() {
+            let type = document.getElementById('bg-type').value;
+            document.getElementById('bg-solid-box').style.display = type === 'solid' ? 'block' : 'none';
+            document.getElementById('bg-gradient-box').style.display = type === 'gradient' ? 'grid' : 'none';
+            document.getElementById('bg-image-box').style.display = type === 'image' ? 'block' : 'none';
+        }
+
+        function getContrastTextColor(hexColor) {
+            hexColor = hexColor.replace('#', '');
+            if (hexColor.length === 3) {
+                hexColor = hexColor.split('').map(c => c + c).join('');
+            }
+            let r = parseInt(hexColor.substr(0, 2), 16);
+            let g = parseInt(hexColor.substr(2, 2), 16);
+            let b = parseInt(hexColor.substr(4, 2), 16);
+            let yiq = (r * 299 + g * 587 + b * 114) / 1000;
+            return yiq >= 128 ? '#0f172a' : '#ffffff';
+        }
+
+        function setSquareFavicon(imgElement) {
+            let canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            let ctx = canvas.getContext('2d');
+            let h = imgElement.naturalHeight;
+            let w = imgElement.naturalWidth;
+            let maxDim = Math.max(w, h);
+            let dw = (maxDim - w) / 2;
+            let dh = (maxDim - h) / 2;
+            ctx.drawImage(imgElement, dw, dh, w, h);
+            let favicon = document.getElementById('browser-favicon');
+            favicon.href = canvas.toDataURL('image/png');
+        }
+
+        function applyBrandGuidelines() {
+            let bgType = document.getElementById('bg-type').value;
+            let fontFamily = document.getElementById('custom-font-family').value;
+            let eventName = document.getElementById('input-event-name').value;
+            let brandBtnColor = document.getElementById('custom-brand-btn-color').value;
+            let customTextColor = document.getElementById('custom-text-color').value;
+            let isAutoContrast = document.getElementById('auto-text-contrast').checked;
+            
+            let body = document.getElementById('app-body');
+            body.style.fontFamily = fontFamily;
+
+            let finalTextColor = customTextColor;
+
+            if (bgType === 'solid') {
+                let solidColor = document.getElementById('custom-bg-solid').value;
+                body.style.backgroundImage = 'none';
+                body.style.backgroundColor = solidColor;
+                if (isAutoContrast) finalTextColor = getContrastTextColor(solidColor);
+            } else if (bgType === 'gradient') {
+                let c1 = document.getElementById('grad-1').value;
+                let c2 = document.getElementById('grad-2').value;
+                body.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
+                if (isAutoContrast) finalTextColor = getContrastTextColor(c1);
+            } else if (bgType === 'image') {
+                let fileInput = document.getElementById('custom-bg-file');
+                if (fileInput.files && fileInput.files[0]) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        body.style.backgroundImage = `url('${e.target.result}')`;
+                    }
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+                if (isAutoContrast) finalTextColor = '#f8fafc';
+            }
+
+            body.style.color = finalTextColor;
+
+            let btnTextColor = getContrastTextColor(brandBtnColor);
+            document.documentElement.style.setProperty('--brand-btn-bg', brandBtnColor);
+            document.documentElement.style.setProperty('--brand-btn-text', btnTextColor);
+
+            let logoFile = document.getElementById('custom-logo-file');
+            let logoImg = document.getElementById('brand-logo-img');
+            let logoDot = document.getElementById('brand-logo-dot');
+
+            if (logoFile.files && logoFile.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    logoImg.src = e.target.result;
+                    logoImg.classList.remove('hidden');
+                    logoDot.classList.add('hidden');
+                    logoImg.onload = function() {
+                        setSquareFavicon(logoImg);
+                    }
+                }
+                reader.readAsDataURL(logoFile.files[0]);
+            }
+
+            document.getElementById('browser-tab-title').innerText = eventName + " - Lucky Draw";
+            syncDisplayScreenInfo();
+            alert('Đã áp dụng Brand Guidelines thành công!');
+        }
+
+        function renderPrizesTable() {
+            let tbody = document.getElementById('prizes-table-body');
+            tbody.innerHTML = "";
+            prizes.forEach((p, idx) => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2.5"><input type="text" value="${p.name}" onchange="prizes[${idx}].name = this.value; updatePrizeDropdown();" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
+                    <td class="p-2.5"><input type="number" min="1" value="${p.total}" onchange="prizes[${idx}].total = parseInt(this.value)||1; updateAdminStats();" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
+                    <td class="p-2.5"><input type="number" min="1" value="${p.perDraw}" onchange="prizes[${idx}].perDraw = parseInt(this.value)||1;" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
+                    <td class="p-2.5 text-center"><button onclick="removePrize(${idx})" class="text-rose-400 hover:text-rose-300 font-bold px-2 py-1">✕</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updatePrizeDropdown();
+        }
+
+        function addPrizeRow() {
+            prizes.push({ id: Date.now(), name: "Giải Mới", total: 1, perDraw: 1, wonCount: 0 });
+            renderPrizesTable();
+        }
+
+        function removePrize(idx) {
+            if (prizes.length <= 1) {
+                alert('Phải giữ lại ít nhất 1 giải thưởng!');
+                return;
+            }
+            prizes.splice(idx, 1);
+            renderPrizesTable();
+        }
+
+        function savePrizesConfig() {
+            updatePrizeDropdown();
+            alert('Đã lưu cấu hình danh sách giải thưởng thành công!');
+        }
+
+        function updatePrizeDropdown() {
+            let selectAdmin = document.getElementById('select-active-prize');
+            let selectDisplay = document.getElementById('display-select-prize');
+            
+            [selectAdmin, selectDisplay].forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = "";
+                prizes.forEach(p => {
+                    let opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.innerText = `${p.name} (Còn: ${p.total - p.wonCount}/${p.total})`;
+                    if (p.id == currentActivePrizeId) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+            syncDisplayScreenInfo();
+        }
+
+        function onSelectedPrizeChange() {
+            let sel = document.getElementById('select-active-prize');
+            if(sel) currentActivePrizeId = parseInt(sel.value);
+            let selDisp = document.getElementById('display-select-prize');
+            if(selDisp) selDisp.value = currentActivePrizeId;
+            syncDisplayScreenInfo();
+        }
+
+        function onDisplayPrizeChange() {
+            let selDisp = document.getElementById('display-select-prize');
+            if(selDisp) currentActivePrizeId = parseInt(selDisp.value);
+            let selAdmin = document.getElementById('select-active-prize');
+            if(selAdmin) selAdmin.value = currentActivePrizeId;
+            syncDisplayScreenInfo();
+        }
+
+        function onDisplayPerDrawChange() {
+            let activeP = prizes.find(p => p.id == currentActivePrizeId);
+            let val = parseInt(document.getElementById('display-input-per-draw').value);
+            if(activeP && val > 0) {
+                activeP.perDraw = val;
+                updateAdminStats();
+            }
+        }
+
+        function updateAdminStats() {
+            let activeP = prizes.find(p => p.id == currentActivePrizeId) || prizes[0];
+            if (!activeP) return;
+            let elTotal = document.getElementById('info-total-prize');
+            let elWon = document.getElementById('info-won-prize');
+            let elPer = document.getElementById('info-per-draw');
+            if(elTotal) elTotal.innerText = activeP.total;
+            if(elWon) elWon.innerText = `${activeP.wonCount} / ${activeP.total}`;
+            if(elPer) elPer.innerText = activeP.perDraw;
+        }
+
+        function syncDisplayScreenInfo() {
+            let eventName = document.getElementById('input-event-name').value;
+            let headerTitle = document.getElementById('header-event-title');
+            let dispBadge = document.getElementById('display-event-badge');
+            if(headerTitle) headerTitle.innerText = eventName;
+            if(dispBadge) dispBadge.innerText = eventName;
+
+            let activeP = prizes.find(p => p.id == currentActivePrizeId) || prizes[0];
+            if (!activeP) return;
+
+            let dispTot = document.getElementById('disp-total-q');
+            let dispWon = document.getElementById('disp-won-q');
+            let dispActiveName = document.getElementById('disp-active-name');
+            let dispPerDrawInput = document.getElementById('display-input-per-draw');
+
+            if(dispTot) dispTot.innerText = activeP.total;
+            if(dispWon) dispWon.innerText = `${activeP.wonCount} / ${activeP.total}`;
+            if(dispActiveName) dispActiveName.innerText = activeP.name;
+            if(dispPerDrawInput && document.activeElement !== dispPerDrawInput) {
+                dispPerDrawInput.value = activeP.perDraw;
+            }
+            updateAdminStats();
+        }
+
+        function downloadSampleCSV() {
+            let sampleContent = "\uFEFFSTT;Mã nhân viên;Họ và tên;Bộ phận\n1;EMP001;Nguyễn Văn An;Phòng Công Nghệ\n2;EMP002;Trần Thị Bình;Phòng Nhân Sự\n3;EMP003;Lê Hoàng Cường;Phòng Kinh Doanh\n4;EMP004;Phạm Thị Dung;Phòng Marketing\n5;EMP005;Hoàng Văn Em;Phòng Tài Chính";
+            let blob = new Blob([sampleContent], { type: "text/csv;charset=utf-8;" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = "danh_sach_nhan_vien_chuan_cot.csv";
+            a.click();
+        }
+
+        let fileInputEl = document.getElementById('import-file');
+        if(fileInputEl) {
+            fileInputEl.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    let text = evt.target.result;
+                    let lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length > 0 && (lines[0].toLowerCase().includes('stt') || lines[0].toLowerCase().includes('mã'))) {
+                        lines.shift();
+                    }
+                    participants = lines.map(line => {
+                        let parts = line.split(/;|,|\t/);
+                        if (parts.length >= 4) {
+                            return `${parts[1].trim()} - ${parts[2].trim()} (${parts[3].trim()})`;
+                        } else if (parts.length >= 3) {
+                            return `${parts[1].trim()} - ${parts[2].trim()}`;
+                        }
+                        return line;
+                    });
+                    alert(`Đã upload thành công ${participants.length} nhân viên từ file CSV!`);
+                };
+                reader.readAsText(file, "UTF-8");
+            });
+        }
+
+        function startSpinningAnimation() {
+            if (isRunning) return;
+            let activeP = prizes.find(p => p.id == currentActivePrizeId);
+            if (!activeP) return;
+
+            if (activeP.wonCount >= activeP.total) {
+                alert(`Giải "${activeP.name}" đã trao đủ số lượng! Vui lòng chọn giải khác.`);
+                return;
+            }
+
+            document.getElementById('start-draw-container').style.display = 'none';
+            document.getElementById('action-buttons-bar').style.display = 'none';
+            document.getElementById('display-winners-container').innerHTML = '';
+
+            isRunning = true;
+            let rollerBox = document.getElementById('display-roller-box');
+            
+            let remainingPrize = activeP.total - activeP.wonCount;
+            let countToDraw = Math.min(activeP.perDraw, remainingPrize);
+
+            let durationSec = parseFloat(document.getElementById('input-spin-duration').value) || 3;
+            let totalSteps = Math.max(15, Math.floor((durationSec * 1000) / 50));
+            let counter = 0;
+
+            let spinInterval = setInterval(() => {
+                let stepRatio = counter / totalSteps;
+                playSound('tick', stepRatio);
+                rollerBox.style.transform = `translateY(${Math.sin(counter) * 12}px)`;
+
+                if (sourceMode === 'number') {
+                    let from = parseInt(document.getElementById('num-from').value) || 1;
+                    let to = Math.min(99999999, parseInt(document.getElementById('num-to').value) || 99999999);
+                    let randNum = Math.floor(Math.random() * (to - from + 1)) + from;
+                    let strNum = String(randNum);
+                    rollerBox.innerText = strNum.padStart(Math.min(8, String(to).length), '0');
+                } else {
+                    let randIdx = Math.floor(Math.random() * participants.length);
+                    rollerBox.innerText = participants[randIdx];
+                }
+
+                counter++;
+                if (counter >= totalSteps) {
+                    clearInterval(spinInterval);
+                    rollerBox.style.transform = 'translateY(0)';
+                    finalizeRound(countToDraw);
+                }
+            }, 50);
+        }
+
+        function finalizeRound(countToDraw) {
+            isRunning = false;
+            playSound('win');
+
+            tempCurrentRoundWinners = [];
+
+            if (forcedSecretWinner && countToDraw === 1) {
+                tempCurrentRoundWinners.push(forcedSecretWinner);
+                forcedSecretWinner = "";
+            } else {
+                if (sourceMode === 'number') {
+                    let from = parseInt(document.getElementById('num-from').value) || 1;
+                    let to = Math.min(99999999, parseInt(document.getElementById('num-to').value) || 99999999);
+                    let pool = [];
+                    for(let i=from; i<=to; i++) {
+                        pool.push(String(i).padStart(Math.min(8, String(to).length), '0'));
+                    }
+                    
+                    for(let i=0; i<countToDraw; i++) {
+                        if(pool.length === 0) break;
+                        let idx = Math.floor(Math.random() * pool.length);
+                        tempCurrentRoundWinners.push(pool.splice(idx, 1)[0]);
+                    }
+                } else {
+                    let pool = [...participants];
+                    for(let i=0; i<countToDraw; i++) {
+                        if(pool.length === 0) break;
+                        let idx = Math.floor(Math.random() * pool.length);
+                        tempCurrentRoundWinners.push(pool.splice(idx, 1)[0]);
+                    }
+                }
+            }
+
+            document.getElementById('display-roller-box').innerHTML = `<span class="text-xl md:text-2xl font-semibold tracking-widest uppercase opacity-90">🎉 Chúc mừng người trúng giải 🎉</span>`;
+            
+            let currentBodyColor = window.getComputedStyle(document.getElementById('app-body')).color;
+
+            let winnersContainer = document.getElementById('display-winners-container');
+            winnersContainer.innerHTML = "";
+            tempCurrentRoundWinners.forEach(w => {
+                let card = document.createElement('div');
+                card.className = "winner-card px-8 py-5 bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-xl text-3xl md:text-6xl font-black tracking-wider";
+                card.style.color = currentBodyColor;
+                card.innerText = w;
+                winnersContainer.appendChild(card);
+            });
+
+            document.getElementById('action-buttons-bar').style.display = 'flex';
+
+            confetti({
+                particleCount: 180,
+                spread: 100,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function saveAndNext() {
+            let activeP = prizes.find(p => p.id == currentActivePrizeId);
+            if (!activeP) return;
+
+            activeP.wonCount += tempCurrentRoundWinners.length;
+
+            allWinnersHistory.push({
+                prizeName: activeP.name,
+                winners: [...tempCurrentRoundWinners],
+                time: new Date().toLocaleTimeString()
+            });
+
+            tempCurrentRoundWinners.forEach(winner => {
+                pushWinnerToGoogleSheet(activeP.name, winner);
+            });
+
+            tempCurrentRoundWinners = [];
+            updatePrizeDropdown();
+            syncDisplayScreenInfo();
+
+            document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
+            document.getElementById('display-winners-container').innerHTML = "";
+            document.getElementById('action-buttons-bar').style.display = 'none';
+            document.getElementById('start-draw-container').style.display = 'block';
+        }
+
+        function discardAndRetry() {
+            if (confirm('Bạn có chắc muốn huỷ kết quả lượt này và tiến hành quay lại giải này không?')) {
+                tempCurrentRoundWinners = [];
+                document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
+                document.getElementById('display-winners-container').innerHTML = "";
+                document.getElementById('action-buttons-bar').style.display = 'none';
+                document.getElementById('start-draw-container').style.display = 'block';
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+
+        function exportResult() {
+            if (allWinnersHistory.length === 0) {
+                alert('Chưa có dữ liệu trúng thưởng nào được lưu!');
+                return;
+            }
+            let csvContent = "\uFEFFThời gian;Giải thưởng;Người trúng thưởng\n";
+            allWinnersHistory.forEach(item => {
+                item.winners.forEach(w => {
+                    csvContent += `"${item.time}";"${item.prizeName}";"${w}"\n`;
+                });
+            });
+
+            let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = "ket_qua_trung_thuong_lucky_draw.csv";
+            a.click();
+        }
+
+        function resetSystem() {
+            if (confirm('Bạn có chắc muốn reset toàn bộ hệ thống và dữ liệu trúng thưởng không?')) {
+                prizes.forEach(p => p.wonCount = 0);
+                allWinnersHistory = [];
+                tempCurrentRoundWinners = [];
+                updatePrizeDropdown();
+                document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
+                document.getElementById('display-winners-container').innerHTML = "";
+                document.getElementById('action-buttons-bar').style.display = 'none';
+                document.getElementById('start-draw-container').style.display = 'block';
+                alert('Đã reset hệ thống thành công!');
+            }
+        }
+    </script>
+</body>
+</html>
