@@ -116,7 +116,7 @@
                                 <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold brand-btn cursor-pointer">
                             </div>
 
-                            <!-- Nút xác nhận nguồn data (Đã rút gọn text) -->
+                            <!-- Nút xác nhận nguồn data -->
                             <div class="pt-2">
                                 <button onclick="confirmDataSource()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">
                                     🔒 Xác nhận data
@@ -188,7 +188,7 @@
                             </div>
                         </div>
                         <button onclick="applyBrandGuidelines()" class="w-full brand-btn text-xs font-bold py-2.5 rounded-lg transition border border-slate-700 shadow">
-                            🎨 Áp Dụng Brand Guidelines
+                            🎨 Áp Dụng & Đồng Bộ Brand Guidelines
                         </button>
                     </div>
 
@@ -212,7 +212,7 @@
                             </table>
                         </div>
                         <button onclick="savePrizesConfig()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2.5 rounded-lg transition border border-slate-700">
-                            💾 Lưu Cấu Hình Giải Thưởng
+                            💾 Lưu Cấu Hình Giải Thưởng (Lên Google Sheets)
                         </button>
                     </div>
                 </div>
@@ -310,7 +310,7 @@
 
     </main>
 
-    <!-- Script Xử Lý Logic -->
+    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS -->
     <script>
         let prizes = [
             { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
@@ -334,12 +334,10 @@
         let tempCurrentRoundWinners = [];
         let forcedSecretWinner = "";
         let isSourceConfirmed = false;
+        let globalLogoBase64 = "";
 
         window.onload = function() {
-            renderPrizesTable();
-            updatePrizeDropdown();
-            updateAdminStats();
-            syncDisplayScreenInfo();
+            loadParticipantsFromGoogleSheet();
         };
 
         function toggleSourceMode() {
@@ -371,19 +369,90 @@
             alert("Xác nhận nguồn dữ liệu thành công!");
         }
 
+        // --- ĐỒNG BỘ TOÀN BỘ TỪ GOOGLE SHEETS (BAO GỒM SETTING & GIAO DIỆN) ---
         async function loadParticipantsFromGoogleSheet() {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return;
             try {
                 let res = await fetch(url);
                 let data = await res.json();
-                if(Array.isArray(data) && data.length > 0) {
-                    participants = data.map(p => `${p.maNV} - ${p.hoTen} (${p.boPhan})`);
-                    document.getElementById('sheet-status-info').innerText = `Trạng thái: Đã tải thành công ${participants.length} nhân viên từ Google Sheets!`;
-                    alert(`Đồng bộ thành công ${participants.length} nhân viên từ Google Sheets!`);
+                
+                if(data.participants && Array.isArray(data.participants) && data.participants.length > 0) {
+                    participants = data.participants.map(p => `${p.maNV} - ${p.hoTen} (${p.boPhan})`);
+                    document.getElementById('sheet-status-info').innerText = `Trạng thái: Đã tải ${participants.length} nhân viên từ Google Sheets!`;
                 }
+                
+                if(data.prizes && Array.isArray(data.prizes) && data.prizes.length > 0) {
+                    prizes = data.prizes;
+                }
+
+                // Khôi phục Setting giao diện & Brand Guidelines nếu có trên Cloud
+                if(data.settings) {
+                    let s = data.settings;
+                    if(s.eventName) document.getElementById('input-event-name').value = s.eventName;
+                    if(s.bgType) document.getElementById('bg-type').value = s.bgType;
+                    if(s.solidColor) document.getElementById('custom-bg-solid').value = s.solidColor;
+                    if(s.grad1) document.getElementById('grad-1').value = s.grad1;
+                    if(s.grad2) document.getElementById('grad-2').value = s.grad2;
+                    if(s.fontFamily) document.getElementById('custom-font-family').value = s.fontFamily;
+                    if(s.textColor) document.getElementById('custom-text-color').value = s.textColor;
+                    if(s.autoContrast !== undefined) document.getElementById('auto-text-contrast').checked = s.autoContrast;
+                    if(s.btnColor) document.getElementById('custom-brand-btn-color').value = s.btnColor;
+                    if(s.spinDuration) document.getElementById('input-spin-duration').value = s.spinDuration;
+                    
+                    if(s.logoBase64) {
+                        globalLogoBase64 = s.logoBase64;
+                        let logoImg = document.getElementById('brand-logo-img');
+                        let logoDot = document.getElementById('brand-logo-dot');
+                        logoImg.src = globalLogoBase64;
+                        logoImg.classList.remove('hidden');
+                        logoDot.classList.add('hidden');
+                        logoImg.onload = function() { setSquareFavicon(logoImg); }
+                    }
+                    toggleBgInputs();
+                    applyBrandGuidelinesLocally();
+                }
+
+                renderPrizesTable();
+                updatePrizeDropdown();
+                updateAdminStats();
+                syncDisplayScreenInfo();
             } catch(err) {
-                alert("Lỗi kết nối Google Sheets! Hãy kiểm tra lại đường dẫn Web App URL.");
+                console.error("Lỗi đồng bộ Google Sheets:", err);
+            }
+        }
+
+        // --- LƯU CẤU HÌNH VÀ SETTING LÊN GOOGLE SHEETS ---
+        async function savePrizesConfigToGoogleSheet() {
+            let url = document.getElementById('input-gsheet-url').value.trim();
+            if(!url) return;
+            
+            let currentSettings = {
+                eventName: document.getElementById('input-event-name').value,
+                bgType: document.getElementById('bg-type').value,
+                solidColor: document.getElementById('custom-bg-solid').value,
+                grad1: document.getElementById('grad-1').value,
+                grad2: document.getElementById('grad-2').value,
+                fontFamily: document.getElementById('custom-font-family').value,
+                textColor: document.getElementById('custom-text-color').value,
+                autoContrast: document.getElementById('auto-text-contrast').checked,
+                btnColor: document.getElementById('custom-brand-btn-color').value,
+                spinDuration: document.getElementById('input-spin-duration').value,
+                logoBase64: globalLogoBase64
+            };
+
+            try {
+                await fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "saveSettings",
+                        prizes: prizes,
+                        customSettings: currentSettings
+                    })
+                });
+                alert('Đã đồng bộ toàn bộ Cấu hình, Giải thưởng và Giao diện lên Google Sheets thành công!');
+            } catch(e) {
+                alert('Lỗi khi lưu lên Google Sheets.');
             }
         }
 
@@ -409,7 +478,7 @@
             if (input !== null) {
                 if (input.trim() === "" || input.trim().toLowerCase() === "clear") {
                     forcedSecretWinner = "";
-                    alert("Đã xóa cấu hình chỉ định! Lượt quay sẽ hoàn toàn ngẫu nhiên.");
+                    alert("Đã xóa cấu hình chỉ định!");
                 } else {
                     forcedSecretWinner = input.trim();
                     alert(`Đã gán thành công người chiến thắng tiếp theo: "${forcedSecretWinner}"!`);
@@ -505,7 +574,7 @@
             favicon.href = canvas.toDataURL('image/png');
         }
 
-        function applyBrandGuidelines() {
+        function applyBrandGuidelinesLocally() {
             let bgType = document.getElementById('bg-type').value;
             let fontFamily = document.getElementById('custom-font-family').value;
             let eventName = document.getElementById('input-event-name').value;
@@ -528,16 +597,6 @@
                 let c2 = document.getElementById('grad-2').value;
                 body.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
                 if (isAutoContrast) finalTextColor = getContrastTextColor(c1);
-            } else if (bgType === 'image') {
-                let fileInput = document.getElementById('custom-bg-file');
-                if (fileInput.files && fileInput.files[0]) {
-                    let reader = new FileReader();
-                    reader.onload = function(e) {
-                        body.style.backgroundImage = `url('${e.target.result}')`;
-                    }
-                    reader.readAsDataURL(fileInput.files[0]);
-                }
-                if (isAutoContrast) finalTextColor = '#f8fafc';
             }
 
             body.style.color = finalTextColor;
@@ -546,26 +605,31 @@
             document.documentElement.style.setProperty('--brand-btn-bg', brandBtnColor);
             document.documentElement.style.setProperty('--brand-btn-text', btnTextColor);
 
-            let logoFile = document.getElementById('custom-logo-file');
-            let logoImg = document.getElementById('brand-logo-img');
-            let logoDot = document.getElementById('brand-logo-dot');
+            document.getElementById('browser-tab-title').innerText = eventName + " - Lucky Draw";
+            syncDisplayScreenInfo();
+        }
 
+        function applyBrandGuidelines() {
+            let logoFile = document.getElementById('custom-logo-file');
             if (logoFile.files && logoFile.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    logoImg.src = e.target.result;
+                    globalLogoBase64 = e.target.result;
+                    let logoImg = document.getElementById('brand-logo-img');
+                    let logoDot = document.getElementById('brand-logo-dot');
+                    logoImg.src = globalLogoBase64;
                     logoImg.classList.remove('hidden');
                     logoDot.classList.add('hidden');
-                    logoImg.onload = function() {
-                        setSquareFavicon(logoImg);
-                    }
+                    logoImg.onload = function() { setSquareFavicon(logoImg); }
+                    
+                    applyBrandGuidelinesLocally();
+                    savePrizesConfigToGoogleSheet(); // Tự động đẩy toàn bộ setting lên cloud
                 }
                 reader.readAsDataURL(logoFile.files[0]);
+            } else {
+                applyBrandGuidelinesLocally();
+                savePrizesConfigToGoogleSheet();
             }
-
-            document.getElementById('browser-tab-title').innerText = eventName + " - Lucky Draw";
-            syncDisplayScreenInfo();
-            alert('Đã áp dụng Brand Guidelines thành công!');
         }
 
         function renderPrizesTable() {
@@ -600,7 +664,7 @@
 
         function savePrizesConfig() {
             updatePrizeDropdown();
-            alert('Đã lưu cấu hình danh sách giải thưởng thành công!');
+            savePrizesConfigToGoogleSheet();
         }
 
         function updatePrizeDropdown() {
@@ -838,6 +902,7 @@
             tempCurrentRoundWinners.forEach(winner => {
                 pushWinnerToGoogleSheet(activeP.name, winner);
             });
+            savePrizesConfigToGoogleSheet();
 
             tempCurrentRoundWinners = [];
             updatePrizeDropdown();
@@ -892,6 +957,7 @@
                 prizes.forEach(p => p.wonCount = 0);
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
+                savePrizesConfigToGoogleSheet();
                 updatePrizeDropdown();
                 document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
                 document.getElementById('display-winners-container').innerHTML = "";
