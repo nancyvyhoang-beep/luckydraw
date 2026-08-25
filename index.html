@@ -287,9 +287,12 @@
                 </div>
 
                 <div id="action-buttons-bar" class="hidden flex flex-col sm:flex-row justify-center items-center gap-3 pt-4 border-t border-slate-800/80">
-                    <button onclick="saveAndNext()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center space-x-2">
-                        <span>💾 Lưu kết quả và tiếp tục quay</span>
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <button onclick="saveAndNext()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center space-x-2">
+                            <span>💾 Lưu kết quả và tiếp tục quay</span>
+                        </button>
+                        <span id="save-status-toast" class="text-xs text-emerald-400 font-semibold opacity-0 transition-opacity duration-300">✓ Đã lưu giải</span>
+                    </div>
                     <button onclick="discardAndRetry()" class="px-6 py-3 bg-rose-600/80 hover:bg-rose-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center space-x-2">
                         <span>🗑️ Xoá kết quả & Quay lại giải này</span>
                     </button>
@@ -310,7 +313,7 @@
 
     </main>
 
-    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS -->
+    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS & CHỐNG TRÙNG LẶP -->
     <script>
         let prizes = [
             { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
@@ -319,6 +322,7 @@
         ];
 
         let participants = []; 
+        let drawnParticipants = new Set(); // Bộ nhớ tạm lọc bỏ những người đã trúng trong phiên
 
         let allWinnersHistory = [];
         let currentActivePrizeId = 1;
@@ -379,7 +383,6 @@
             alert("Xác nhận nguồn dữ liệu thành công!");
         }
 
-        // --- ĐỒNG BỘ TOÀN BỘ TỪ GOOGLE SHEETS & XỬ LÝ KHÔNG ĐỂ DẤU TRỐNG THỪA ---
         async function loadParticipantsFromGoogleSheet() {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return false;
@@ -390,23 +393,20 @@
                 if(data.participants && Array.isArray(data.participants) && data.participants.length > 0) {
                     participants = data.participants.map(p => {
                         let mainParts = [];
-                        // Chỉ lấy mã nhân viên nếu có thật
                         if (p.maNV && String(p.maNV).trim() !== "") {
                             mainParts.push(String(p.maNV).trim());
                         }
-                        // Lấy họ tên nếu có thật
                         if (p.hoTen && String(p.hoTen).trim() !== "") {
                             mainParts.push(String(p.hoTen).trim());
                         }
 
                         let textName = mainParts.join(" - ");
 
-                        // Chỉ thêm bộ phận vào ngoặc nếu thực sự có nội dung
                         if (p.boPhan && String(p.boPhan).trim() !== "") {
                             return textName ? `${textName} (${String(p.boPhan).trim()})` : String(p.boPhan).trim();
                         }
                         return textName;
-                    }).filter(item => item !== ""); // Lọc bỏ các dòng hoàn toàn trống
+                    }).filter(item => item !== "");
 
                     document.getElementById('sheet-status-info').innerText = `Trạng thái: Đã tải ${participants.length} nhân viên từ Google Sheets!`;
                 }
@@ -479,10 +479,7 @@
                         customSettings: currentSettings
                     })
                 });
-                alert('Đã lưu cấu hình, tên chương trình và logo lên Google Sheets thành công!');
-            } catch(e) {
-                alert('Lỗi khi lưu lên Google Sheets.');
-            }
+            } catch(e) {}
         }
 
         async function pushWinnerToGoogleSheet(prizeName, winnerInfo) {
@@ -825,6 +822,14 @@
                 return;
             }
 
+            // Lọc ra pool những người chưa trúng giải trong phiên
+            let availablePool = sourceMode === 'number' ? [] : participants.filter(p => !drawnParticipants.has(p));
+
+            if (sourceMode !== 'number' && availablePool.length === 0) {
+                alert("⚠️ Tất cả nhân viên trong danh sách đều đã trúng giải! Không còn người để quay tiếp.");
+                return;
+            }
+
             document.getElementById('start-draw-container').style.display = 'none';
             document.getElementById('action-buttons-bar').style.display = 'none';
             document.getElementById('display-winners-container').innerHTML = '';
@@ -851,27 +856,20 @@
                     let strNum = String(randNum);
                     rollerBox.innerText = strNum.padStart(Math.min(8, String(to).length), '0');
                 } else {
-                    if(participants.length === 0) {
-                        clearInterval(spinInterval);
-                        alert("⚠️ Danh sách người tham gia đang trống! Vui lòng kiểm tra lại nguồn dữ liệu.");
-                        isRunning = false;
-                        document.getElementById('start-draw-container').style.display = 'block';
-                        return;
-                    }
-                    let randIdx = Math.floor(Math.random() * participants.length);
-                    rollerBox.innerText = participants[randIdx];
+                    let randIdx = Math.floor(Math.random() * availablePool.length);
+                    rollerBox.innerText = availablePool[randIdx];
                 }
 
                 counter++;
                 if (counter >= totalSteps) {
                     clearInterval(spinInterval);
                     rollerBox.style.transform = 'translateY(0)';
-                    finalizeRound(countToDraw);
+                    finalizeRound(countToDraw, availablePool);
                 }
             }, 50);
         }
 
-        function finalizeRound(countToDraw) {
+        function finalizeRound(countToDraw, availablePool) {
             isRunning = false;
             playSound('win');
 
@@ -879,6 +877,7 @@
 
             if (forcedSecretWinner && countToDraw === 1) {
                 tempCurrentRoundWinners.push(forcedSecretWinner);
+                drawnParticipants.add(forcedSecretWinner);
                 forcedSecretWinner = "";
             } else {
                 if (sourceMode === 'number') {
@@ -895,11 +894,13 @@
                         tempCurrentRoundWinners.push(pool.splice(idx, 1)[0]);
                     }
                 } else {
-                    let pool = [...participants];
+                    let pool = [...availablePool];
                     for(let i=0; i<countToDraw; i++) {
                         if(pool.length === 0) break;
                         let idx = Math.floor(Math.random() * pool.length);
-                        tempCurrentRoundWinners.push(pool.splice(idx, 1)[0]);
+                        let winner = pool.splice(idx, 1)[0];
+                        tempCurrentRoundWinners.push(winner);
+                        drawnParticipants.add(winner); // Đánh dấu người này đã trúng để không bị lặp lại
                     }
                 }
             }
@@ -948,6 +949,13 @@
             updatePrizeDropdown();
             syncDisplayScreenInfo();
 
+            // Hiển thị text nhỏ "Đã lưu giải" thay vì pop-up to
+            let toast = document.getElementById('save-status-toast');
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+
             document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
             document.getElementById('display-winners-container').innerHTML = "";
             document.getElementById('action-buttons-bar').style.display = 'none';
@@ -956,6 +964,8 @@
 
         function discardAndRetry() {
             if (confirm('Bạn có chắc muốn huỷ kết quả lượt này và tiến hành quay lại giải này không?')) {
+                // Hoàn lại quyền tham gia cho những người vừa bị hủy kết quả vòng này
+                tempCurrentRoundWinners.forEach(w => drawnParticipants.delete(w));
                 tempCurrentRoundWinners = [];
                 document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
                 document.getElementById('display-winners-container').innerHTML = "";
@@ -997,6 +1007,7 @@
                 prizes.forEach(p => p.wonCount = 0);
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
+                drawnParticipants.clear(); // Xóa bộ nhớ chống trùng lặp
                 savePrizesConfigToGoogleSheet();
                 updatePrizeDropdown();
                 document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
