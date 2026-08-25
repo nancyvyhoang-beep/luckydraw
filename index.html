@@ -243,6 +243,9 @@
                             <button onclick="exportResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold py-2.5 rounded-lg transition">
                                 📊 Export DS Trúng Thưởng (CSV)
                             </button>
+                            <button onclick="resetWinnersOnly()" class="w-full bg-slate-800 hover:bg-amber-950/40 text-amber-400 text-xs py-2 rounded-lg transition border border-slate-700">
+                                🔄 Reset Người Trúng Thưởng (Cho phép quay lại từ đầu)
+                            </button>
                             <button onclick="resetSystem()" class="w-full bg-slate-900 hover:bg-red-950/40 text-rose-400 text-xs py-2 rounded-lg transition border border-slate-800">
                                 🔄 Reset Toàn Bộ Hệ Thống
                             </button>
@@ -313,7 +316,7 @@
 
     </main>
 
-    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS & CHỐNG TRÙNG LẶP -->
+    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS -->
     <script>
         let prizes = [
             { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
@@ -822,7 +825,6 @@
                 return;
             }
 
-            // Lọc ra pool những người chưa trúng giải trong phiên
             let availablePool = sourceMode === 'number' ? [] : participants.filter(p => !drawnParticipants.has(p));
 
             if (sourceMode !== 'number' && availablePool.length === 0) {
@@ -900,7 +902,7 @@
                         let idx = Math.floor(Math.random() * pool.length);
                         let winner = pool.splice(idx, 1)[0];
                         tempCurrentRoundWinners.push(winner);
-                        drawnParticipants.add(winner); // Đánh dấu người này đã trúng để không bị lặp lại
+                        drawnParticipants.add(winner);
                     }
                 }
             }
@@ -949,7 +951,7 @@
             updatePrizeDropdown();
             syncDisplayScreenInfo();
 
-            // Hiển thị text nhỏ "Đã lưu giải" thay vì pop-up to
+            // Hiển thị text nhỏ "✓ Đã lưu giải"
             let toast = document.getElementById('save-status-toast');
             toast.style.opacity = '1';
             setTimeout(() => {
@@ -964,7 +966,6 @@
 
         function discardAndRetry() {
             if (confirm('Bạn có chắc muốn huỷ kết quả lượt này và tiến hành quay lại giải này không?')) {
-                // Hoàn lại quyền tham gia cho những người vừa bị hủy kết quả vòng này
                 tempCurrentRoundWinners.forEach(w => drawnParticipants.delete(w));
                 tempCurrentRoundWinners = [];
                 document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
@@ -1002,12 +1003,25 @@
             a.click();
         }
 
+        // --- RESET NGƯỜI TRÚNG THƯỞNG (CHO PHÉP QUAY LẠI TỪ ĐẦU) ---
+        function resetWinnersOnly() {
+            if (confirm('Bạn có muốn reset danh sách người trúng thưởng để mọi người có thể quay lại từ đầu không? (Số lượng đã trúng của các giải sẽ về 0)')) {
+                prizes.forEach(p => p.wonCount = 0);
+                drawnParticipants.clear();
+                allWinnersHistory = [];
+                tempCurrentRoundWinners = [];
+                savePrizesConfigToGoogleSheet();
+                updatePrizeDropdown();
+                alert('Đã reset danh sách người trúng thưởng thành công! Bây giờ bạn có thể quay lại từ đầu.');
+            }
+        }
+
         function resetSystem() {
             if (confirm('Bạn có chắc muốn reset toàn bộ hệ thống và dữ liệu trúng thưởng không?')) {
                 prizes.forEach(p => p.wonCount = 0);
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
-                drawnParticipants.clear(); // Xóa bộ nhớ chống trùng lặp
+                drawnParticipants.clear();
                 savePrizesConfigToGoogleSheet();
                 updatePrizeDropdown();
                 document.getElementById('display-roller-box').innerText = "SẴN SÀNG";
