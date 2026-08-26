@@ -82,9 +82,9 @@
 
       void main() {
           vec2 uv = v_texCoord;
-          vec3 color1 = vec3(0.043, 0.075, 0.149); // Slate-950 base
-          vec3 color2 = vec3(0.388, 0.4, 0.945);   // Indigo-500
-          vec3 color3 = vec3(0.063, 0.725, 0.506); // Emerald-500
+          vec3 color1 = vec3(0.043, 0.075, 0.149);
+          vec3 color2 = vec3(0.388, 0.4, 0.945);
+          vec3 color3 = vec3(0.063, 0.725, 0.506);
           
           float noise = sin(uv.x * 10.0 + u_time) * cos(uv.y * 10.0 + u_time);
           float glow = 0.1 / length(uv - 0.5 + 0.2 * vec2(sin(u_time * 0.5), cos(u_time * 0.3)));
@@ -424,7 +424,7 @@
         <span id="footer-event-name">© 2026 TECH SUMMIT 2026 - LUCKY DRAW PLATFORM</span>
     </footer>
 
-    <!-- Script Xử Lý Logic API Google Sheets & Chống Reset Logo khi F5 -->
+    <!-- Script Xử Lý Logic API Google Sheets & Lưu Vĩnh Viễn Background/Logo khi F5 -->
     <script>
         let prizes = [
             { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
@@ -445,7 +445,7 @@
         let globalLogoBase64 = "";
 
         window.onload = function() {
-            // Khôi phục logo và cấu hình từ localStorage ngay lập tức khi F5
+            // Khôi phục logo và favicon từ localStorage ngay khi F5
             let cachedLogo = localStorage.getItem('lucky_draw_logo');
             if (cachedLogo) {
                 globalLogoBase64 = cachedLogo;
@@ -457,6 +457,22 @@
                 logoImg.onload = function() { setSquareFavicon(logoImg); }
             }
 
+            // Khôi phục cấu hình background đã thay đổi từ localStorage khi F5
+            let cachedBg = localStorage.getItem('lucky_draw_bg_config');
+            if (cachedBg) {
+                try {
+                    let bgConfig = JSON.parse(cachedBg);
+                    document.getElementById('bg-type').value = bgConfig.bgType || 'solid';
+                    if(bgConfig.solidColor) document.getElementById('custom-bg-solid').value = bgConfig.solidColor;
+                    if(bgConfig.grad1) document.getElementById('grad-1').value = bgConfig.grad1;
+                    if(bgConfig.grad2) document.getElementById('grad-2').value = bgConfig.grad2;
+                    if(bgConfig.imageBgData) {
+                        document.getElementById('app-body').style.backgroundImage = `url('${bgConfig.imageBgData}')`;
+                    }
+                    toggleBgInputs();
+                } catch(e) {}
+            }
+
             let cachedData = localStorage.getItem('lucky_draw_cache');
             if (cachedData) {
                 try {
@@ -466,6 +482,27 @@
             }
             loadParticipantsFromGoogleSheet();
         };
+
+        function setSquareFavicon(imgElement) {
+            try {
+                let canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                let ctx = canvas.getContext('2d');
+                let h = imgElement.naturalHeight || imgElement.height;
+                let w = imgElement.naturalWidth || imgElement.width;
+                if (!w || !h) return;
+                let maxDim = Math.max(w, h);
+                let dw = (maxDim - w) / 2;
+                let dh = (maxDim - h) / 2;
+                ctx.clearRect(0, 0, 64, 64);
+                ctx.drawImage(imgElement, dw, dh, w, h);
+                let favicon = document.getElementById('browser-favicon');
+                if (favicon) {
+                    favicon.href = canvas.toDataURL('image/png');
+                }
+            } catch(e) {}
+        }
 
         function toggleSourceMode() {
             let mode = document.getElementById('input-source-mode').value;
@@ -740,21 +777,6 @@
             return yiq >= 128 ? '#0f172a' : '#ffffff';
         }
 
-        function setSquareFavicon(imgElement) {
-            let canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            let ctx = canvas.getContext('2d');
-            let h = imgElement.naturalHeight;
-            let w = imgElement.naturalWidth;
-            let maxDim = Math.max(w, h);
-            let dw = (maxDim - w) / 2;
-            let dh = (maxDim - h) / 2;
-            ctx.drawImage(imgElement, dw, dh, w, h);
-            let favicon = document.getElementById('browser-favicon');
-            favicon.href = canvas.toDataURL('image/png');
-        }
-
         function applyBrandGuidelinesLocally() {
             let bgType = document.getElementById('bg-type').value;
             let fontFamily = document.getElementById('custom-font-family').value;
@@ -769,11 +791,13 @@
 
             let finalTextColor = customTextColor;
             let finalTitleColor = customTitleColor;
+            let bgConfigToSave = { bgType: bgType };
 
             if (bgType === 'solid') {
                 let solidColor = document.getElementById('custom-bg-solid').value;
                 body.style.backgroundImage = 'none';
                 body.style.backgroundColor = solidColor;
+                bgConfigToSave.solidColor = solidColor;
                 if (isAutoContrast) {
                     finalTextColor = getContrastTextColor(solidColor);
                     finalTitleColor = finalTextColor;
@@ -782,6 +806,8 @@
                 let c1 = document.getElementById('grad-1').value;
                 let c2 = document.getElementById('grad-2').value;
                 body.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
+                bgConfigToSave.grad1 = c1;
+                bgConfigToSave.grad2 = c2;
                 if (isAutoContrast) {
                     finalTextColor = getContrastTextColor(c1);
                     finalTitleColor = finalTextColor;
@@ -791,15 +817,31 @@
                 if (fileInput.files && fileInput.files[0]) {
                     let reader = new FileReader();
                     reader.onload = function(e) {
-                        body.style.backgroundImage = `url('${e.target.result}')`;
+                        let base64Img = e.target.result;
+                        body.style.backgroundImage = `url('${base64Img}')`;
+                        bgConfigToSave.imageBgData = base64Img;
+                        localStorage.setItem('lucky_draw_bg_config', JSON.stringify(bgConfigToSave));
                     }
                     reader.readAsDataURL(fileInput.files[0]);
+                } else {
+                    let cachedBg = localStorage.getItem('lucky_draw_bg_config');
+                    if(cachedBg) {
+                        try {
+                            let parsedBg = JSON.parse(cachedBg);
+                            if(parsedBg.imageBgData) {
+                                body.style.backgroundImage = `url('${parsedBg.imageBgData}')`;
+                                bgConfigToSave.imageBgData = parsedBg.imageBgData;
+                            }
+                        } catch(e) {}
+                    }
                 }
                 if (isAutoContrast) {
                     finalTextColor = '#f8fafc';
                     finalTitleColor = '#f8fafc';
                 }
             }
+
+            localStorage.setItem('lucky_draw_bg_config', JSON.stringify(bgConfigToSave));
 
             body.style.color = finalTextColor;
             document.documentElement.style.setProperty('--title-text-color', finalTitleColor);
@@ -1176,19 +1218,19 @@
         }
 
         function resetWinnersOnly() {
-            if (confirm('Bạn có muốn reset danh sách người trúng thưởng để mọi người có thể quay lại từ đầu không? Số lượng đã trúng của các giải sẽ về 0.')) {
+            if (confirm('Bạn có muốn reset danh sách người trúng thưởng để mọi người có thể quay lại từ đầu không? (Số lượng đã trúng của các giải sẽ về 0)')) {
                 prizes.forEach(p => p.wonCount = 0);
                 drawnParticipants.clear();
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
                 savePrizesConfigToGoogleSheet();
                 updatePrizeDropdown();
-                alert('Đã reset danh sách người trúng thưởng thành công!');
+                alert('Đã reset danh sách người trúng thưởng thành công! Bây giờ bạn có thể quay lại từ đầu.');
             }
         }
 
         function resetSystem() {
-            if (confirm('Bạn có chắc muốn reset toàn bộ hệ thống?')) {
+            if (confirm('Bạn có chắc muốn reset toàn bộ hệ thống và dữ liệu trúng thưởng không?')) {
                 prizes.forEach(p => p.wonCount = 0);
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
