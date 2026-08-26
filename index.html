@@ -22,9 +22,11 @@
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .glass-panel { background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .winner-card { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -40,17 +42,110 @@
         .brand-btn:hover { opacity: 0.9; }
         #brand-logo-img { max-height: 32px; width: auto; object-fit: contain; }
         .roller-slot { display: inline-block; transition: transform 0.05s ease-in-out; }
-        .sync-title { color: inherit !important; }
+        .sync-title { color: var(--title-text-color, inherit) !important; }
     </style>
 </head>
-<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-4 md:p-6 transition-all duration-300 bg-cover bg-center bg-no-repeat" style="font-family: 'Be Vietnam Pro', sans-serif;">
+<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-4 md:p-6 transition-all duration-300 bg-cover bg-center bg-no-repeat relative overflow-x-hidden" style="font-family: 'Be Vietnam Pro', sans-serif;">
+
+    <!-- STITCH_SHADER_START:ANIMATION_4 (Hiệu ứng shader động làm lớp ẩn hòa trộn phía trên background) -->
+    <div class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-40 mix-blend-screen" style="display:block;">
+        <canvas id="shader-canvas-ANIMATION_4" style="display:block;width:100%;height:100%"></canvas>
+    </div>
+    <script>
+    (function() {
+      const canvas = document.getElementById('shader-canvas-ANIMATION_4');
+      if (!canvas) return;
+      function syncSize() {
+        const w = canvas.clientWidth  || window.innerWidth;
+        const h = canvas.clientHeight || window.innerHeight;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width  = w;
+          canvas.height = h;
+        }
+      }
+      if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(syncSize).observe(canvas);
+      }
+      syncSize();
+
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+      const vs = `attribute vec2 a_position;
+      varying vec2 v_texCoord;
+      void main() {
+        v_texCoord = a_position * 0.5 + 0.5;
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }`;
+      const fs = `precision highp float;
+      varying vec2 v_texCoord;
+      uniform float u_time;
+      uniform vec2 u_resolution;
+
+      void main() {
+          vec2 uv = v_texCoord;
+          vec3 color1 = vec3(0.043, 0.075, 0.149); // Slate-950 base
+          vec3 color2 = vec3(0.388, 0.4, 0.945);   // Indigo-500
+          vec3 color3 = vec3(0.063, 0.725, 0.506); // Emerald-500
+          
+          float noise = sin(uv.x * 10.0 + u_time) * cos(uv.y * 10.0 + u_time);
+          float glow = 0.1 / length(uv - 0.5 + 0.2 * vec2(sin(u_time * 0.5), cos(u_time * 0.3)));
+          
+          vec3 color = mix(color1, color2, clamp(noise + glow, 0.0, 1.0));
+          color = mix(color, color3, clamp(glow * 0.5, 0.0, 0.2));
+          
+          gl_FragColor = vec4(color, 1.0);
+      }`;
+      function cs(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      }
+      const prog = gl.createProgram();
+      gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+      gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      const pos = gl.getAttribLocation(prog, 'a_position');
+      gl.enableVertexAttribArray(pos);
+      gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uRes = gl.getUniformLocation(prog, 'u_resolution');
+      const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+      let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+      window.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          const nx = (event.clientX - rect.left) / rect.width;
+          const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+          mouse.x = nx * canvas.width;
+          mouse.y = ny * canvas.height;
+        }
+      });
+
+      function render(t) {
+        if (typeof ResizeObserver === 'undefined') syncSize();
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        if (uTime) gl.uniform1f(uTime, t * 0.001);
+        if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+        if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(render);
+      }
+      render(0);
+    })();
+    </script>
 
     <!-- Top Navigation -->
-    <header class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-slate-800 gap-4">
+    <header class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-slate-800 gap-4 relative z-10">
         <div class="flex items-center space-x-3">
             <img id="brand-logo-img" src="" alt="Logo" class="hidden">
             <div id="brand-logo-dot" class="w-3.5 h-3.5 bg-indigo-500 rounded-full animate-ping"></div>
-            <h1 id="header-event-title" class="text-xl md:text-2xl font-black tracking-wide cursor-pointer" ondblclick="openSecretWinnerModal()" title="Double click để mở chế độ chỉ định người thắng ẩn">
+            <h1 id="header-event-title" class="text-xl md:text-2xl font-black tracking-wide cursor-pointer sync-title" ondblclick="openSecretWinnerModal()" title="Double click để mở chế độ chỉ định người thắng ẩn">
                 TECH SUMMIT 2026 - LUCKY DRAW
             </h1>
         </div>
@@ -65,7 +160,7 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl w-full mx-auto my-6 flex-grow">
+    <main class="max-w-7xl w-full mx-auto my-6 flex-grow relative z-10">
         
         <!-- ================= TAB 1: TRANG ĐIỀU KHIỂN (ADMIN PANEL) ================= -->
         <div id="tab-control" class="tab-content active space-y-6">
@@ -165,7 +260,11 @@
                                 <input type="file" id="custom-bg-file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-800 file:text-white cursor-pointer">
                             </div>
                             <div>
-                                <label class="block text-xs opacity-90 mb-1 font-semibold">Màu chữ thủ công (Custom Text Color):</label>
+                                <label class="block text-xs opacity-90 mb-1 font-semibold">Màu chữ tiêu đề (Title Text Color):</label>
+                                <input type="color" id="custom-title-color" value="#f8fafc" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg cursor-pointer p-1">
+                            </div>
+                            <div>
+                                <label class="block text-xs opacity-90 mb-1 font-semibold">Màu chữ nội dung khác (Body Text Color):</label>
                                 <input type="color" id="custom-text-color" value="#f8fafc" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg cursor-pointer p-1">
                             </div>
                             <div class="flex items-center pt-5">
@@ -260,63 +359,73 @@
         <div id="tab-display" class="tab-content space-y-6">
             <div class="glass-panel p-6 md:p-10 rounded-3xl min-h-[580px] flex flex-col justify-between shadow-2xl relative overflow-hidden border border-indigo-500/30">
                 
-                <div class="flex flex-col lg:flex-row justify-between items-center gap-3">
-                    <div class="space-y-1 text-center lg:text-left">
-                        <span id="display-event-badge" class="text-xs uppercase font-extrabold tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 cursor-pointer" ondblclick="openSecretWinnerModal()" title="Double click để mở chế độ chỉ định người thắng ẩn">
-                            TECH SUMMIT 2026
-                        </span>
+                <!-- UI 1: Khung Badge sự kiện phía trên tiêu đề giải thưởng -->
+                <div class="flex flex-col items-center gap-4 w-full">
+                    <div class="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-slate-900/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.15)] relative">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                        <span id="display-event-badge" class="font-bold text-xs uppercase tracking-[0.25em] text-indigo-300 cursor-pointer sync-title" ondblclick="openSecretWinnerModal()">TRINITY LUCKYDRAW</span>
                     </div>
-
-                    <div class="flex flex-wrap items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                        <div class="flex items-center space-x-1 text-xs">
-                            <span class="opacity-90">Giải:</span>
-                            <select id="display-select-prize" onchange="onDisplayPrizeChange()" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-bold text-amber-400">
-                            </select>
-                        </div>
-                        <div class="flex items-center space-x-1 text-xs">
-                            <span class="opacity-90">SL/Lượt:</span>
-                            <input type="number" id="display-input-per-draw" min="1" max="50" onchange="onDisplayPerDrawChange()" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs font-bold text-indigo-300">
-                        </div>
-                        <button onclick="toggleFullScreen()" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded text-xs">⛶ Full</button>
-                        <button onclick="switchTab('control')" class="brand-btn px-2.5 py-1 rounded text-xs font-bold">⚙️ Admin</button>
-                    </div>
+                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-extrabold tracking-tight text-white drop-shadow-md text-center">MacBook Pro M4</h2>
                 </div>
 
-                <div class="my-auto py-8 text-center space-y-4 overflow-hidden">
-                    <div id="display-roller-box" class="roller-slot text-4xl md:text-7xl font-black tracking-wider drop-shadow-md min-h-[120px] flex items-center justify-center transition-all">
+                <!-- CĂN CHỈNH TÂM TUYỆT ĐỐI CHO KẾT QUẢ VÀ DÒNG CHỮ CHÚC MỪNG -->
+                <div class="my-auto py-6 text-center overflow-hidden flex flex-col items-center justify-center gap-5 w-full">
+                    <div id="display-roller-box" class="roller-slot text-4xl md:text-7xl font-black tracking-wider drop-shadow-md min-h-[90px] flex items-center justify-center transition-all w-full">
                         SẴN SÀNG
                     </div>
-                    <div id="display-winners-container" class="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto min-h-[80px]"></div>
+                    <div id="display-winners-container" class="flex flex-wrap justify-center items-center gap-4 max-w-5xl mx-auto min-h-[90px] w-full"></div>
                 </div>
 
-                <div id="action-buttons-bar" class="hidden flex flex-col sm:flex-row justify-center items-center gap-3 pt-4 border-t border-slate-800/80">
+                <div id="action-buttons-bar" class="hidden flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 border-t border-slate-800/80">
                     <div class="flex items-center gap-3">
-                        <button onclick="saveAndNext()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center space-x-2">
+                        <button onclick="saveAndNext()" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-xl shadow-[0_0_20px_rgba(52,211,153,0.4)] border-2 border-emerald-400 transition flex items-center space-x-2 cursor-pointer">
                             <span>💾 Lưu kết quả và tiếp tục quay</span>
                         </button>
                         <span id="save-status-toast" class="text-xs text-emerald-400 font-semibold opacity-0 transition-opacity duration-300">✓ Đã lưu giải</span>
                     </div>
-                    <button onclick="discardAndRetry()" class="px-6 py-3 bg-rose-600/80 hover:bg-rose-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center space-x-2">
+                    <button onclick="discardAndRetry()" class="px-6 py-3.5 bg-rose-600/80 hover:bg-rose-600 text-white font-black text-sm rounded-xl shadow-lg transition flex items-center space-x-2 cursor-pointer">
                         <span>🗑️ Xoá kết quả & Quay lại giải này</span>
                     </button>
                 </div>
 
                 <div id="start-draw-container" class="w-full max-w-md mx-auto pt-2">
-                    <button onclick="startSpinningAnimation()" id="btn-start-spin" class="w-full brand-btn font-black text-xl py-4 rounded-2xl shadow-xl transition transform active:scale-95 tracking-wider">
+                    <button onclick="startSpinningAnimation()" id="btn-start-spin" class="w-full brand-btn font-black text-xl py-4 rounded-2xl shadow-xl transition transform active:scale-95 tracking-wider cursor-pointer">
                         🎲 BẮT ĐẦU QUAY SỐ
                     </button>
                 </div>
 
-                <div class="w-full flex justify-between items-center text-xs opacity-90 pt-4 border-t border-slate-800/40">
-                    <div>Giải hiện tại: <span id="disp-active-name" class="text-amber-400 font-bold">MacBook Pro M4</span></div>
-                    <div>Đã trúng / Tổng kho: <span id="disp-won-q" class="text-emerald-400 font-bold">0 / 1</span></div>
+                <!-- UI 2: Thanh điều khiển giải thưởng dạng khung bo tròn hiện đại ở bên dưới -->
+                <div class="w-full flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-slate-800/80 text-xs">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="opacity-90 font-medium">Giải thưởng:</span>
+                            <select id="display-select-prize" onchange="onDisplayPrizeChange()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-400 cursor-pointer">
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="opacity-90 font-medium">SL/Lượt:</span>
+                            <input type="number" id="display-input-per-draw" min="1" max="50" onchange="onDisplayPerDrawChange()" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-indigo-300 text-center">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="font-mono text-slate-300">Đã trúng: <span id="disp-won-q" class="text-emerald-400 font-bold">0 / 1</span></div>
+                        <button onclick="toggleFullScreen()" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 border border-slate-700 transition cursor-pointer flex items-center gap-1.5">
+                            ⛶ Fullscreen
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </div>
 
     </main>
 
-    <!-- Script Xử Lý Logic ĐỒNG BỘ TOÀN DIỆN GOOGLE SHEETS -->
+    <!-- Footer đồng bộ theo tên sự kiện -->
+    <footer class="max-w-7xl w-full mx-auto py-4 text-center text-xs opacity-70 border-t border-slate-800 mt-auto relative z-10">
+        <span id="footer-event-name">© 2026 TECH SUMMIT 2026 - LUCKY DRAW PLATFORM</span>
+    </footer>
+
+    <!-- Script Xử Lý Logic API Google Sheets -->
     <script>
         let prizes = [
             { id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 },
@@ -325,8 +434,7 @@
         ];
 
         let participants = []; 
-        let drawnParticipants = new Set(); // Bộ nhớ tạm lọc bỏ những người đã trúng trong phiên
-
+        let drawnParticipants = new Set();
         let allWinnersHistory = [];
         let currentActivePrizeId = 1;
         let sourceMode = 'google'; 
@@ -338,6 +446,13 @@
         let globalLogoBase64 = "";
 
         window.onload = function() {
+            let cachedData = localStorage.getItem('lucky_draw_cache');
+            if (cachedData) {
+                try {
+                    let parsed = JSON.parse(cachedData);
+                    applySettingsToUI(parsed);
+                } catch(e) {}
+            }
             loadParticipantsFromGoogleSheet();
         };
 
@@ -390,9 +505,15 @@
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return false;
             try {
-                let res = await fetch(url);
+                let controller = new AbortController();
+                let timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                let res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
                 let data = await res.json();
                 
+                localStorage.setItem('lucky_draw_cache', JSON.stringify(data));
+
                 if(data.participants && Array.isArray(data.participants) && data.participants.length > 0) {
                     participants = data.participants.map(p => {
                         let mainParts = [];
@@ -419,29 +540,7 @@
                 }
 
                 if(data.settings) {
-                    let s = data.settings;
-                    if(s.eventName) document.getElementById('input-event-name').value = s.eventName;
-                    if(s.bgType) document.getElementById('bg-type').value = s.bgType;
-                    if(s.solidColor) document.getElementById('custom-bg-solid').value = s.solidColor;
-                    if(s.grad1) document.getElementById('grad-1').value = s.grad1;
-                    if(s.grad2) document.getElementById('grad-2').value = s.grad2;
-                    if(s.fontFamily) document.getElementById('custom-font-family').value = s.fontFamily;
-                    if(s.textColor) document.getElementById('custom-text-color').value = s.textColor;
-                    if(s.autoContrast !== undefined) document.getElementById('auto-text-contrast').checked = s.autoContrast;
-                    if(s.btnColor) document.getElementById('custom-brand-btn-color').value = s.btnColor;
-                    if(s.spinDuration) document.getElementById('input-spin-duration').value = s.spinDuration;
-                    
-                    if(s.logoBase64) {
-                        globalLogoBase64 = s.logoBase64;
-                        let logoImg = document.getElementById('brand-logo-img');
-                        let logoDot = document.getElementById('brand-logo-dot');
-                        logoImg.src = globalLogoBase64;
-                        logoImg.classList.remove('hidden');
-                        logoDot.classList.add('hidden');
-                        logoImg.onload = function() { setSquareFavicon(logoImg); }
-                    }
-                    toggleBgInputs();
-                    applyBrandGuidelinesLocally();
+                    applySettingsToUI(data);
                 }
 
                 renderPrizesTable();
@@ -455,18 +554,55 @@
             }
         }
 
+        function applySettingsToUI(data) {
+            let s = data.settings;
+            if(!s) return;
+            if(s.eventName) {
+                document.getElementById('input-event-name').value = s.eventName;
+                let footerEl = document.getElementById('footer-event-name');
+                if(footerEl) footerEl.innerText = `© 2026 ${s.eventName} - LUCKY DRAW PLATFORM`;
+            }
+            if(s.bgType) document.getElementById('bg-type').value = s.bgType;
+            if(s.solidColor) document.getElementById('custom-bg-solid').value = s.solidColor;
+            if(s.grad1) document.getElementById('grad-1').value = s.grad1;
+            if(s.grad2) document.getElementById('grad-2').value = s.grad2;
+            if(s.fontFamily) document.getElementById('custom-font-family').value = s.fontFamily;
+            if(s.textColor) document.getElementById('custom-text-color').value = s.textColor;
+            if(s.titleColor) document.getElementById('custom-title-color').value = s.titleColor;
+            if(s.autoContrast !== undefined) document.getElementById('auto-text-contrast').checked = s.autoContrast;
+            if(s.btnColor) document.getElementById('custom-brand-btn-color').value = s.btnColor;
+            if(s.spinDuration) document.getElementById('input-spin-duration').value = s.spinDuration;
+            
+            if(s.logoBase64) {
+                globalLogoBase64 = s.logoBase64;
+                let logoImg = document.getElementById('brand-logo-img');
+                let logoDot = document.getElementById('brand-logo-dot');
+                logoImg.src = globalLogoBase64;
+                logoImg.classList.remove('hidden');
+                logoDot.classList.add('hidden');
+                logoImg.onload = function() { setSquareFavicon(logoImg); }
+            }
+            toggleBgInputs();
+            applyBrandGuidelinesLocally();
+        }
+
         async function savePrizesConfigToGoogleSheet() {
             let url = document.getElementById('input-gsheet-url').value.trim();
             if(!url) return;
             
+            let eventNameVal = document.getElementById('input-event-name').value;
+            let footerEl = document.getElementById('footer-event-name');
+            if(footerEl) footerEl.innerText = `© 2026 ${eventNameVal} - LUCKY DRAW PLATFORM`;
+
             let currentSettings = {
-                eventName: document.getElementById('input-event-name').value,
+                eventName: eventNameVal,
                 bgType: document.getElementById('bg-type').value,
                 solidColor: document.getElementById('custom-bg-solid').value,
                 grad1: document.getElementById('grad-1').value,
                 grad2: document.getElementById('grad-2').value,
                 fontFamily: document.getElementById('custom-font-family').value,
                 textColor: document.getElementById('custom-text-color').value,
+                titleColor: document.getElementById('custom-title-color').value,
                 autoContrast: document.getElementById('auto-text-contrast').checked,
                 btnColor: document.getElementById('custom-brand-btn-color').value,
                 spinDuration: document.getElementById('input-spin-duration').value,
@@ -613,26 +749,48 @@
             let eventName = document.getElementById('input-event-name').value;
             let brandBtnColor = document.getElementById('custom-brand-btn-color').value;
             let customTextColor = document.getElementById('custom-text-color').value;
+            let customTitleColor = document.getElementById('custom-title-color').value;
             let isAutoContrast = document.getElementById('auto-text-contrast').checked;
             
             let body = document.getElementById('app-body');
             body.style.fontFamily = fontFamily;
 
             let finalTextColor = customTextColor;
+            let finalTitleColor = customTitleColor;
 
             if (bgType === 'solid') {
                 let solidColor = document.getElementById('custom-bg-solid').value;
                 body.style.backgroundImage = 'none';
                 body.style.backgroundColor = solidColor;
-                if (isAutoContrast) finalTextColor = getContrastTextColor(solidColor);
+                if (isAutoContrast) {
+                    finalTextColor = getContrastTextColor(solidColor);
+                    finalTitleColor = finalTextColor;
+                }
             } else if (bgType === 'gradient') {
                 let c1 = document.getElementById('grad-1').value;
                 let c2 = document.getElementById('grad-2').value;
                 body.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
-                if (isAutoContrast) finalTextColor = getContrastTextColor(c1);
+                if (isAutoContrast) {
+                    finalTextColor = getContrastTextColor(c1);
+                    finalTitleColor = finalTextColor;
+                }
+            } else if (bgType === 'image') {
+                let fileInput = document.getElementById('custom-bg-file');
+                if (fileInput.files && fileInput.files[0]) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        body.style.backgroundImage = `url('${e.target.result}')`;
+                    }
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+                if (isAutoContrast) {
+                    finalTextColor = '#f8fafc';
+                    finalTitleColor = '#f8fafc';
+                }
             }
 
             body.style.color = finalTextColor;
+            document.documentElement.style.setProperty('--title-text-color', finalTitleColor);
 
             let btnTextColor = getContrastTextColor(brandBtnColor);
             document.documentElement.style.setProperty('--brand-btn-bg', brandBtnColor);
@@ -758,8 +916,10 @@
             let eventName = document.getElementById('input-event-name').value;
             let headerTitle = document.getElementById('header-event-title');
             let dispBadge = document.getElementById('display-event-badge');
+            let footerEl = document.getElementById('footer-event-name');
             if(headerTitle) headerTitle.innerText = eventName;
             if(dispBadge) dispBadge.innerText = eventName;
+            if(footerEl) footerEl.innerText = `© 2026 ${eventName} - LUCKY DRAW PLATFORM`;
 
             let activeP = prizes.find(p => p.id == currentActivePrizeId) || prizes[0];
             if (!activeP) return;
@@ -907,7 +1067,7 @@
                 }
             }
 
-            document.getElementById('display-roller-box').innerHTML = `<span class="text-xl md:text-2xl font-semibold tracking-widest uppercase opacity-90">🎉 Chúc mừng người trúng giải 🎉</span>`;
+            document.getElementById('display-roller-box').innerHTML = `<span class="text-xl md:text-3xl font-extrabold tracking-widest uppercase text-emerald-400 drop-shadow">🎉 CHÚC MỪNG NGƯỜI TRÚNG GIẢI 🎉</span>`;
             
             let currentBodyColor = window.getComputedStyle(document.getElementById('app-body')).color;
 
@@ -915,7 +1075,7 @@
             winnersContainer.innerHTML = "";
             tempCurrentRoundWinners.forEach(w => {
                 let card = document.createElement('div');
-                card.className = "winner-card px-8 py-5 bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-xl text-3xl md:text-6xl font-black tracking-wider";
+                card.className = "winner-card px-8 py-4 bg-slate-900 border-4 border-emerald-500 rounded-3xl shadow-2xl text-2xl md:text-5xl font-black tracking-wider text-center mx-auto";
                 card.style.color = currentBodyColor;
                 card.innerText = w;
                 winnersContainer.appendChild(card);
@@ -951,7 +1111,6 @@
             updatePrizeDropdown();
             syncDisplayScreenInfo();
 
-            // Hiển thị text nhỏ "✓ Đã lưu giải"
             let toast = document.getElementById('save-status-toast');
             toast.style.opacity = '1';
             setTimeout(() => {
@@ -1003,7 +1162,6 @@
             a.click();
         }
 
-        // --- RESET NGƯỜI TRÚNG THƯỞNG (CHO PHÉP QUAY LẠI TỪ ĐẦU) ---
         function resetWinnersOnly() {
             if (confirm('Bạn có muốn reset danh sách người trúng thưởng để mọi người có thể quay lại từ đầu không? (Số lượng đã trúng của các giải sẽ về 0)')) {
                 prizes.forEach(p => p.wonCount = 0);
@@ -1017,7 +1175,7 @@
         }
 
         function resetSystem() {
-            if (confirm('Bạn có chắc muốn reset toàn bộ hệ thống và dữ liệu trúng thưởng không?')) {
+            if (confirm('You sure want to reset?')) {
                 prizes.forEach(p => p.wonCount = 0);
                 allWinnersHistory = [];
                 tempCurrentRoundWinners = [];
