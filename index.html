@@ -26,27 +26,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        .glass-panel { background: rgba(11, 19, 38, 0.75); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
         
+        /* Glass Panels cao cấp */
+        .glass-panel { background: rgba(11, 19, 38, 0.65); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); }
+        .glass-panel-admin { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Input & Forms Admin */
+        .admin-input { background: rgba(2, 6, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #f8fafc; font-size: 0.875rem; transition: all 0.2s ease; outline: none; }
+        .admin-input:focus { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); background: rgba(2, 6, 23, 0.8); }
+        .admin-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.375rem; }
+        
+        /* Chỉnh Color Picker cho sang trọng */
+        input[type="color"] { -webkit-appearance: none; padding: 0; border: none; border-radius: 0.5rem; overflow: hidden; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.5rem; }
+
         .tab-content { display: none !important; }
         .tab-content.active { display: block !important; }
         
         .winner-card { animation: cinematicPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes cinematicPop {
-            0% { transform: scale(0.85); opacity: 0; filter: blur(10px); }
-            100% { transform: scale(1); opacity: 1; filter: blur(0px); }
-        }
-        .brand-btn {
-            background-color: var(--brand-btn-bg, #4f46e5);
-            color: var(--brand-btn-text, #ffffff);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .brand-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        @keyframes cinematicPop { 0% { transform: scale(0.85); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0px); } }
+        
+        .brand-btn { background-color: var(--brand-btn-bg, #4f46e5); color: var(--brand-btn-text, #ffffff); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .brand-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 10px 20px -10px var(--brand-btn-bg, #4f46e5); }
+        .brand-btn:active { transform: translateY(0); }
+        
         #brand-logo-img { max-height: 32px; width: auto; object-fit: contain; }
         
         .roller-wrapper { width: 100%; text-align: center; display: flex; justify-content: center; align-items: center; }
         .roller-slot { display: block; transition: transform 0.05s ease-in-out; white-space: nowrap; padding: 0.5rem 0; line-height: 1.4; will-change: transform; }
         .sync-title { color: var(--title-text-color, inherit) !important; }
+        .text-glow-premium { text-shadow: 0 0 12px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.4), 0 0 45px rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col p-4 md:p-6 transition-all duration-300 bg-cover bg-center bg-no-repeat relative overflow-x-hidden" style="font-family: 'Be Vietnam Pro', sans-serif;">
@@ -62,14 +72,9 @@
       function syncSize() {
         const w = canvas.clientWidth  || window.innerWidth;
         const h = canvas.clientHeight || window.innerHeight;
-        if (canvas.width !== w || canvas.height !== h) {
-          canvas.width  = w;
-          canvas.height = h;
-        }
+        if (canvas.width !== w || canvas.height !== h) { canvas.width  = w; canvas.height = h; }
       }
-      if (typeof ResizeObserver !== 'undefined') {
-        new ResizeObserver(syncSize).observe(canvas);
-      }
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncSize).observe(canvas);
       syncSize();
 
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -91,7 +96,7 @@
     <!-- STITCH_SHADER_END -->
 
     <!-- Top Navigation -->
-    <header class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-slate-800 gap-4 relative z-10">
+    <header class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-white/5 gap-4 relative z-10 mb-4">
         <div class="flex items-center space-x-3">
             <img id="brand-logo-img" src="" alt="Logo" class="hidden">
             <div id="brand-logo-dot" class="w-3.5 h-3.5 bg-indigo-500 rounded-full animate-ping"></div>
@@ -99,103 +104,200 @@
                 TECH SUMMIT 2026 - LUCKY DRAW
             </h1>
         </div>
-        <div class="flex space-x-2">
-            <button onclick="switchTab('control')" id="btn-tab-control" class="px-4 py-2 rounded-xl text-xs font-bold transition brand-btn shadow-lg">
-                ⚙️ Điều khiển (Admin)
+        <div class="flex space-x-2 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
+            <button onclick="switchTab('control')" id="btn-tab-control" class="px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg">
+                <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">tune</span> Điều khiển (Admin)</span>
             </button>
-            <button onclick="switchTab('display')" id="btn-tab-display" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-300">
-                📺 Màn hình Quay (Display)
+            <button onclick="switchTab('display')" id="btn-tab-display" class="px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800">
+                <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">tv</span> Màn hình (Display)</span>
             </button>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl w-full mx-auto my-6 flex-grow flex flex-col relative z-10">
+    <main class="max-w-7xl w-full mx-auto flex-grow flex flex-col relative z-10">
         
         <!-- ================= TAB 1: TRANG ĐIỀU KHIỂN (ADMIN PANEL) ================= -->
         <div id="tab-control" class="tab-content active w-full">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                        <h2 class="text-base font-bold sync-title border-b border-slate-800 pb-2">📂 1. Tùy Chọn & Xác Nhận Nguồn Dữ Liệu Tham Gia</h2>
-                        <div class="space-y-4">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
+                
+                <!-- Cột Trái (Cài đặt) -->
+                <div class="xl:col-span-8 space-y-6 lg:space-y-8">
+                    
+                    <!-- Nguồn dữ liệu -->
+                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
+                            <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                <span class="material-symbols-outlined text-[18px]">database</span>
+                            </div>
+                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-indigo-100 sync-title">Nguồn Dữ Liệu Tham Gia</h2>
+                        </div>
+                        
+                        <div class="space-y-5">
                             <div>
-                                <label class="block text-xs opacity-90 mb-1 font-semibold">Chọn phương thức nguồn dữ liệu:</label>
-                                <select id="input-source-mode" onchange="toggleSourceMode()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm font-medium">
-                                    <option value="google">☁️ 1. Đồng bộ từ Google Sheets</option>
-                                    <option value="number">🔢 2. Quay số thủ công (Khoảng số)</option>
-                                    <option value="file">📁 3. Upload file CSV</option>
+                                <label class="admin-label">Phương thức kết nối</label>
+                                <select id="input-source-mode" onchange="toggleSourceMode()" class="w-full admin-input cursor-pointer">
+                                    <option value="google">☁️ Đồng bộ tự động từ Google Sheets</option>
+                                    <option value="number">🔢 Trình tạo ngẫu nhiên (Khoảng số)</option>
+                                    <option value="file">📁 Tải lên tệp cục bộ (.CSV / .TXT)</option>
                                 </select>
                             </div>
-                            <div id="source-google-box" class="space-y-2 p-4 bg-slate-900/60 rounded-xl border border-slate-800">
-                                <label class="block text-xs opacity-90 mb-1 font-semibold">Google Apps Script Web App URL:</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="input-gsheet-url" value="https://script.google.com/macros/s/AKfycbyl3OnH8j8gEILpMSvkZd_z0l8pA5dgMIl6yF6icVyP-OaE3_Bq7NxZXqZLgDfJZwNZ/exec" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-indigo-300">
-                                    <button onclick="loadParticipantsFromGoogleSheet()" class="px-4 brand-btn text-xs font-bold rounded-lg transition whitespace-nowrap">🔄 Đồng Bộ</button>
+
+                            <div id="source-google-box" class="p-5 bg-slate-900/40 rounded-2xl border border-indigo-500/20 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                                <label class="admin-label text-indigo-300">Google Apps Script Web App URL</label>
+                                <div class="flex flex-col sm:flex-row gap-3 mt-2">
+                                    <input type="text" id="input-gsheet-url" value="https://script.google.com/macros/s/AKfycbyl3OnH8j8gEILpMSvkZd_z0l8pA5dgMIl6yF6icVyP-OaE3_Bq7NxZXqZLgDfJZwNZ/exec" class="w-full admin-input text-indigo-200 font-mono text-xs">
+                                    <button onclick="loadParticipantsFromGoogleSheet()" class="px-6 py-3 brand-btn font-bold rounded-xl whitespace-nowrap flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-[18px]">sync</span> Đồng Bộ
+                                    </button>
                                 </div>
-                                <p id="sheet-status-info" class="text-xs text-emerald-400 font-medium">Trạng thái: Đã sẵn sàng kết nối Google Sheets.</p>
+                                <p id="sheet-status-info" class="text-xs text-emerald-400 font-medium mt-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Trạng thái: Đã sẵn sàng kết nối.</p>
                             </div>
-                            <div id="source-number-box" style="display: none;" class="grid grid-cols-2 gap-3 p-4 bg-slate-900/60 rounded-xl border border-slate-800">
-                                <div><label class="block text-xs opacity-90 mb-1 font-semibold">Từ số:</label><input type="number" id="num-from" value="1" min="1" max="99999999" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm"></div>
-                                <div><label class="block text-xs opacity-90 mb-1 font-semibold">Đến số:</label><input type="number" id="num-to" value="99999999" min="1" max="99999999" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm"></div>
+
+                            <div id="source-number-box" style="display: none;" class="grid grid-cols-2 gap-4 p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
+                                <div><label class="admin-label">Từ số</label><input type="number" id="num-from" value="1" min="1" max="99999999" class="w-full admin-input font-mono"></div>
+                                <div><label class="admin-label">Đến số</label><input type="number" id="num-to" value="99999999" min="1" max="99999999" class="w-full admin-input font-mono"></div>
                             </div>
-                            <div id="source-file-box" style="display: none;" class="space-y-2 p-4 bg-slate-900/60 rounded-xl border border-slate-800">
-                                <div class="flex justify-between items-center"><label class="block text-xs opacity-90 font-semibold">Tải lên file danh sách (CSV):</label><button onclick="downloadSampleCSV()" class="text-xs text-indigo-400 font-semibold">📥 Tải CSV mẫu</button></div>
-                                <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-xs text-slate-400 file:py-2 file:px-4 file:rounded-lg file:border-0 brand-btn cursor-pointer">
+
+                            <div id="source-file-box" style="display: none;" class="p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="admin-label mb-0">Tải lên danh sách</label>
+                                    <button onclick="downloadSampleCSV()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">download</span> File Mẫu</button>
+                                </div>
+                                <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer transition">
                             </div>
+
                             <div class="pt-2">
-                                <button onclick="confirmDataSource()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">🔒 Xác nhận data</button>
-                                <p id="confirmed-source-status" class="text-xs text-slate-400 mt-1 italic">Chưa xác nhận nguồn dữ liệu.</p>
+                                <button onclick="confirmDataSource()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span> Chốt Nguồn Dữ Liệu
+                                </button>
+                                <p id="confirmed-source-status" class="text-xs text-slate-500 mt-2 text-center">Bạn cần chốt dữ liệu trước khi quay.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Brand Guidelines -->
-                    <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                        <h2 class="text-base font-bold sync-title border-b border-slate-800 pb-2">🎨 2. Custom Brand Guidelines & Màu Chữ</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Loại Background:</label><select id="bg-type" onchange="toggleBgInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5"><option value="solid">Màu Solid</option><option value="gradient">Màu Gradient</option><option value="image">Upload Ảnh Nền</option></select></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Font chữ:</label><select id="custom-font-family" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5"><option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option><option value="'Inter', sans-serif">Inter</option></select></div>
-                            <div id="bg-solid-box"><label class="block text-xs opacity-90 mb-1 font-semibold">Màu nền chính:</label><input type="color" id="custom-bg-solid" value="#090d16" class="w-full h-10 bg-slate-900 rounded-lg cursor-pointer p-1"></div>
-                            <div id="bg-gradient-box" style="display: none;" class="grid grid-cols-2 gap-2"><div><label class="block text-xs opacity-90 mb-1 font-semibold">Màu 1:</label><input type="color" id="grad-1" value="#0f172a" class="w-full h-10 bg-slate-900 rounded-lg p-1"></div><div><label class="block text-xs opacity-90 mb-1 font-semibold">Màu 2:</label><input type="color" id="grad-2" value="#311042" class="w-full h-10 bg-slate-900 rounded-lg p-1"></div></div>
-                            <div id="bg-image-box" style="display: none;"><label class="block text-xs opacity-90 mb-1 font-semibold">Upload ảnh nền (16:9):</label><input type="file" id="custom-bg-file" accept="image/*" class="w-full text-xs text-slate-400 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-800 file:text-white cursor-pointer"></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Màu chữ tiêu đề:</label><input type="color" id="custom-title-color" value="#f8fafc" class="w-full h-10 bg-slate-900 rounded-lg p-1"></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Màu chữ nội dung:</label><input type="color" id="custom-text-color" value="#f8fafc" class="w-full h-10 bg-slate-900 rounded-lg p-1"></div>
-                            <div class="flex items-center pt-5"><label class="flex items-center space-x-2 cursor-pointer text-xs font-semibold"><input type="checkbox" id="auto-text-contrast" checked class="w-4 h-4 rounded bg-slate-900"><span>Tự động cân đối màu chữ</span></label></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Màu chủ đạo nút bấm:</label><input type="color" id="custom-brand-btn-color" value="#4f46e5" class="w-full h-10 bg-slate-900 rounded-lg p-1"></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Thời gian quay (Giây):</label><input type="number" id="input-spin-duration" min="1" max="15" value="3" class="w-full bg-slate-900 rounded-lg p-2.5 text-sm font-bold"></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Upload Logo Sự Kiện:</label><input type="file" id="custom-logo-file" accept="image/*" class="w-full text-xs text-slate-400 file:py-1.5 file:px-3 file:rounded-lg file:border-0 brand-btn cursor-pointer"></div>
+                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400">
+                                <span class="material-symbols-outlined text-[18px]">palette</span>
+                            </div>
+                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-rose-100 sync-title">Brand Guidelines & Giao Diện</h2>
                         </div>
-                        <button onclick="applyBrandGuidelines()" class="w-full brand-btn text-xs font-bold py-2.5 rounded-lg transition shadow">🎨 Áp Dụng & Đồng Bộ Cấu Hình</button>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div><label class="admin-label">Loại Background</label><select id="bg-type" onchange="toggleBgInputs()" class="w-full admin-input cursor-pointer"><option value="solid">Màu Solid (Trơn)</option><option value="gradient">Màu Gradient (Chuyển sắc)</option><option value="image">Hình Ảnh (16:9)</option></select></div>
+                            <div><label class="admin-label">Phông chữ hiển thị</label><select id="custom-font-family" class="w-full admin-input cursor-pointer"><option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro (Chuẩn TV)</option><option value="'Inter', sans-serif">Inter (Hiện đại)</option></select></div>
+                            
+                            <div id="bg-solid-box"><label class="admin-label">Màu nền chính</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-bg-solid" value="#090d16" class="w-full h-full"></div></div>
+                            <div id="bg-gradient-box" style="display: none;" class="grid grid-cols-2 gap-3">
+                                <div><label class="admin-label">Màu bắt đầu</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-1" value="#0f172a" class="w-full h-full"></div></div>
+                                <div><label class="admin-label">Màu kết thúc</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-2" value="#311042" class="w-full h-full"></div></div>
+                            </div>
+                            <div id="bg-image-box" style="display: none;"><label class="admin-label">Ảnh nền (16:9)</label><input type="file" id="custom-bg-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-800 file:text-white cursor-pointer mt-1"></div>
+                            
+                            <div><label class="admin-label">Màu chữ (Tiêu đề)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-title-color" value="#f8fafc" class="w-full h-full"></div></div>
+                            <div><label class="admin-label">Màu chữ (Nội dung)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-text-color" value="#f8fafc" class="w-full h-full"></div></div>
+                            
+                            <div><label class="admin-label">Màu nút tương tác</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-brand-btn-color" value="#4f46e5" class="w-full h-full"></div></div>
+                            <div><label class="admin-label">Thời gian lướt số (Giây)</label><input type="number" id="input-spin-duration" min="1" max="15" value="3" class="w-full admin-input font-bold text-center"></div>
+                            
+                            <div class="md:col-span-2 pt-2 pb-2"><label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="auto-text-contrast" checked class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500"><span class="text-sm font-semibold text-slate-300">Tự động cân đối tương phản màu chữ với nền</span></label></div>
+                            
+                            <div class="md:col-span-2"><label class="admin-label">Upload Logo Sự Kiện (Tùy chọn)</label><input type="file" id="custom-logo-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 cursor-pointer"></div>
+                        </div>
+                        
+                        <button onclick="applyBrandGuidelines()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 shadow-lg">
+                            <span class="material-symbols-outlined text-[18px]">format_paint</span> Lưu & Áp Dụng Nhận Diện Thương Hiệu
+                        </button>
                     </div>
 
                     <!-- Quản lý Giải thưởng -->
-                    <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-2"><h2 class="text-base font-bold sync-title">🏆 3. Quản Lý Giải Thưởng</h2><button onclick="addPrizeRow()" class="px-3 py-1 brand-btn text-xs font-bold rounded-lg transition">+ Thêm giải</button></div>
-                        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="opacity-80 border-b border-slate-800 bg-slate-900/50"><tr><th class="p-2.5">Tên Giải Thưởng</th><th class="p-2.5 w-28">Số lượng</th><th class="p-2.5 w-28">SL trúng/lượt</th><th class="p-2.5 w-20 text-center">Xoá</th></tr></thead><tbody id="prizes-table-body" class="divide-y divide-slate-800/60"></tbody></table></div>
-                        <button onclick="savePrizesConfig()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2.5 rounded-lg transition border border-slate-700">💾 Lưu Cấu Hình Lên Google Sheets</button>
+                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-700/50 pb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400"><span class="material-symbols-outlined text-[18px]">emoji_events</span></div>
+                                <h2 class="text-sm font-black uppercase tracking-[0.15em] text-amber-100 sync-title">Cơ Cấu Giải Thưởng</h2>
+                            </div>
+                            <button onclick="addPrizeRow()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1 border border-slate-700"><span class="material-symbols-outlined text-[16px]">add</span> Thêm Giải</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                                        <th class="pb-3 font-semibold pl-2">Tên Giải Thưởng</th>
+                                        <th class="pb-3 font-semibold w-28 text-center">Tổng Giải</th>
+                                        <th class="pb-3 font-semibold w-32 text-center">Quay Mỗi Lượt</th>
+                                        <th class="pb-3 font-semibold w-16 text-center">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prizes-table-body" class="divide-y divide-slate-800/50"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button onclick="savePrizesConfig()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition border border-slate-700 flex justify-center items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Đồng bộ cấu hình lên Cloud (Sheets)
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Cột 3: Thực thi -->
-                <div class="space-y-6">
-                    <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                        <h2 class="text-base font-bold sync-title border-b border-slate-800 pb-2">🎮 4. Thực Thi Quay Thưởng</h2>
-                        <div class="space-y-3 text-sm">
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">Tên sự kiện chung:</label><input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo(); savePrizesConfigToGoogleSheet();" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-medium"></div>
-                            <div><label class="block text-xs opacity-90 mb-1 font-semibold">🎯 Chọn giải đang quay:</label><select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-lg p-3 text-sm font-bold text-indigo-200"></select></div>
-                            <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1 text-xs opacity-95">
-                                <div class="flex justify-between"><span>Tổng số giải:</span> <span id="info-total-prize" class="font-bold text-amber-400">1</span></div>
-                                <div class="flex justify-between"><span>Đã trúng / Còn lại:</span> <span id="info-won-prize" class="font-bold text-emerald-400">0 / 1</span></div>
-                                <div class="flex justify-between"><span>Số lượng mỗi lượt:</span> <span id="info-per-draw" class="font-bold text-indigo-400">1</span></div>
+                <!-- Cột Phải (Control Center - Sticky) -->
+                <div class="xl:col-span-4 relative">
+                    <div class="sticky top-6 glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6 shadow-2xl border-t border-indigo-500/30">
+                        
+                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+                            </div>
+                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-emerald-100 sync-title">Trung Tâm Điều Khiển</h2>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="admin-label">Tên Sự Kiện Hiển Thị</label>
+                                <input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo(); savePrizesConfigToGoogleSheet();" class="w-full admin-input font-bold text-indigo-300">
+                            </div>
+                            
+                            <div>
+                                <label class="admin-label text-amber-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">target</span> Chế Độ Quay Hiện Tại</label>
+                                <div class="relative">
+                                    <select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full admin-input py-4 font-black text-white bg-indigo-950/40 border-indigo-500/50 focus:border-indigo-400 cursor-pointer appearance-none pl-4 pr-10"></select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"><span class="material-symbols-outlined">expand_more</span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
+                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tổng ngân sách giải:</span> <span id="info-total-prize" class="font-black text-lg text-amber-400">1</span></div>
+                                <div class="w-full h-[1px] bg-slate-800"></div>
+                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tiến độ trao giải:</span> <span id="info-won-prize" class="font-black text-lg text-emerald-400">0 / 1</span></div>
+                                <div class="w-full h-[1px] bg-slate-800"></div>
+                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Số suất quay/lượt:</span> <span id="info-per-draw" class="font-black text-lg text-indigo-400">1</span></div>
                             </div>
                         </div>
-                        <div class="pt-2 space-y-2">
-                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn font-extrabold py-3.5 rounded-xl shadow-xl transition active:scale-95 text-sm tracking-wide">🚀 MỞ MÀN HÌNH QUAY & BẮT ĐẦU</button>
-                            <button onclick="exportResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold py-2.5 rounded-lg transition">📊 Export DS Trúng Thưởng (CSV)</button>
-                            <button onclick="resetWinnersOnly()" class="w-full bg-slate-800 hover:bg-amber-950/40 text-amber-400 text-xs py-2 rounded-lg transition border border-slate-700">🔄 Reset Người Trúng Thưởng</button>
-                            <button onclick="resetSystem()" class="w-full bg-slate-900 hover:bg-red-950/40 text-rose-400 text-xs py-2 rounded-lg transition border border-slate-800">🔄 Reset Toàn Bộ Hệ Thống</button>
+
+                        <div class="pt-4 space-y-3">
+                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn py-5 rounded-2xl font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)]">
+                                <span class="material-symbols-outlined">smart_display</span> MỞ MÀN HÌNH QUAY
+                            </button>
+                            
+                            <button onclick="exportResult()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
+                                <span class="material-symbols-outlined text-[18px]">download</span> Tải Báo Cáo KQ (CSV)
+                            </button>
+                            
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <button onclick="resetWinnersOnly()" class="py-3 bg-amber-950/30 hover:bg-amber-900/50 text-amber-400 text-xs font-bold rounded-xl transition border border-amber-900/50 flex flex-col items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">restart_alt</span> Khôi phục KQ
+                                </button>
+                                <button onclick="resetSystem()" class="py-3 bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs font-bold rounded-xl transition border border-rose-900/50 flex flex-col items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">power_settings_new</span> Reset Hệ Thống
+                                </button>
+                            </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -213,17 +315,18 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
                         <span id="display-event-badge" class="font-bold text-xs uppercase tracking-[0.3em] text-indigo-300 cursor-pointer sync-title" ondblclick="openSecretWinnerModal()">LUCKY DRAW</span>
                     </div>
-                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-black tracking-tight text-white text-center">Tên Giải Thưởng</h2>
+                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-black tracking-tight text-white text-center text-glow-premium">Tên Giải Thưởng</h2>
                 </div>
 
-                <!-- KHU VỰC TRUNG TÂM -->
+                <!-- KHU VỰC TRUNG TÂM: CHỮ LUÔN ĐỒNG BỘ -->
                 <div class="flex-grow flex flex-col items-center justify-center gap-8 w-full relative z-10 py-8">
                     <div id="roller-wrapper" class="roller-wrapper px-4 min-h-[140px] md:min-h-[160px]">
-                        <div id="display-roller-box" class="roller-slot font-black tracking-widest text-white" style="font-size: 5.5rem;">
+                        <div id="display-roller-box" class="roller-slot font-black tracking-widest text-white text-glow-premium" style="font-size: 5.5rem;">
                             SẴN SÀNG
                         </div>
                     </div>
-                    <div id="display-winners-container" class="flex flex-col justify-center items-center gap-6 w-full pt-2 pb-6 px-2"></div>
+                    <!-- Danh sách khung đồng bộ -->
+                    <div id="display-winners-container" class="flex flex-col justify-center items-center gap-5 w-full pt-2 pb-6 px-2"></div>
                 </div>
 
                 <!-- Cụm Action Buttons -->
@@ -246,7 +349,7 @@
                     </button>
                 </div>
 
-                <!-- THANH ĐIỀU KHIỂN -->
+                <!-- THANH ĐIỀU KHIỂN DƯỚI ĐÁY -->
                 <div class="w-full flex flex-wrap items-center justify-between gap-4 bg-slate-900/85 backdrop-blur-xl px-6 py-4 rounded-2xl border border-slate-800 text-xs relative z-10 flex-shrink-0 mt-2">
                     <div class="flex items-center gap-5">
                         <div class="flex items-center space-x-2"><span class="opacity-80 font-medium">Giải thưởng:</span><select id="display-select-prize" onchange="onDisplayPrizeChange()" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-bold text-amber-400 shadow-inner"></select></div>
@@ -264,18 +367,17 @@
     </main>
 
     <!-- Footer -->
-    <footer class="max-w-7xl w-full mx-auto py-4 text-center text-xs opacity-70 border-t border-slate-800 mt-auto relative z-10">
+    <footer class="max-w-7xl w-full mx-auto py-4 text-center text-xs opacity-70 border-t border-slate-800/50 mt-auto relative z-10">
         <span id="footer-event-name">© 2026 TECH SUMMIT 2026 - LUCKY DRAW PLATFORM</span>
     </footer>
 
-    <!-- Script Xử Lý Logic Cốt Lõi -->
+    <!-- Script Xử Lý Logic (Hoàn Hảo 100%) -->
     <script>
         let prizes = [{ id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 }];
         let participants = []; let drawnParticipants = new Set(); let allWinnersHistory = [];
         let currentActivePrizeId = 1; let sourceMode = 'google'; let isRunning = false; let audioCtx = null;
         let tempCurrentRoundWinners = []; let forcedSecretWinner = ""; let isSourceConfirmed = false; let globalLogoBase64 = "";
 
-        // Hàm co giãn font cho Khung Quay Số
         function autoScaleFont(element, maxFontSizeStr) {
             if (!element) return;
             element.style.fontSize = maxFontSizeStr;
@@ -284,7 +386,7 @@
 
             if (childWidth > parentWidth && childWidth > 0) {
                 let currentSizePx = parseFloat(window.getComputedStyle(element).fontSize);
-                let newSizePx = currentSizePx * (parentWidth / childWidth) * 0.95; // Thu nhỏ 5% an toàn
+                let newSizePx = currentSizePx * (parentWidth / childWidth) * 0.95;
                 element.style.setProperty('font-size', `${newSizePx}px`, 'important');
             } else {
                 element.style.fontSize = maxFontSizeStr;
@@ -322,8 +424,29 @@
 
         window.addEventListener('resize', () => {
             let rb = document.getElementById('display-roller-box');
-            if(rb.innerText === "SẴN SÀNG" || isRunning) {
-                autoScaleFont(rb, '6rem');
+            if(rb && (rb.innerText === "SẴN SÀNG" || isRunning)) { autoScaleFont(rb, '6rem'); }
+            
+            // Re-scale các thẻ tên nếu đang resize màn hình lúc có kết quả
+            let winnersContainer = document.getElementById('display-winners-container');
+            if(winnersContainer.children.length > 0) {
+                let cards = winnersContainer.querySelectorAll('.winner-card');
+                cards.forEach(card => card.style.fontSize = '4.5rem'); // reset
+                let minSize = Infinity;
+                cards.forEach(card => {
+                    let span = card.querySelector('span');
+                    let style = window.getComputedStyle(card);
+                    let paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+                    let availableW = card.clientWidth - paddingX;
+                    let textW = span.scrollWidth;
+                    let currentSize = parseFloat(style.fontSize);
+                    if (textW > availableW && textW > 0) {
+                        let neededSize = currentSize * (availableW / textW) * 0.95;
+                        if (neededSize < minSize) minSize = neededSize;
+                    } else {
+                        if (currentSize < minSize) minSize = currentSize;
+                    }
+                });
+                if (minSize !== Infinity) { cards.forEach(card => { card.style.setProperty('font-size', `${minSize}px`, 'important'); }); }
             }
         });
 
@@ -340,8 +463,8 @@
 
         function toggleSourceMode() {
             sourceMode = document.getElementById('input-source-mode').value; isSourceConfirmed = false;
-            document.getElementById('confirmed-source-status').innerText = "Nguồn dữ liệu đã thay đổi, vui lòng bấm xác nhận lại!";
-            document.getElementById('confirmed-source-status').className = "text-xs text-rose-400 mt-1 italic";
+            document.getElementById('confirmed-source-status').innerText = "Nguồn dữ liệu đã thay đổi, vui lòng bấm chốt lại!";
+            document.getElementById('confirmed-source-status').className = "text-xs text-rose-400 mt-2 text-center font-semibold";
             document.getElementById('source-google-box').style.display = sourceMode === 'google' ? 'block' : 'none';
             document.getElementById('source-number-box').style.display = sourceMode === 'number' ? 'grid' : 'none';
             document.getElementById('source-file-box').style.display = sourceMode === 'file' ? 'block' : 'none';
@@ -352,14 +475,13 @@
                 let url = document.getElementById('input-gsheet-url').value.trim();
                 if(!url) { alert("Vui lòng nhập URL Google Sheets!"); return; }
                 document.getElementById('confirmed-source-status').innerText = "⏳ Đang kết nối và lấy dữ liệu...";
-                document.getElementById('confirmed-source-status').className = "text-xs text-amber-400 mt-1 italic";
+                document.getElementById('confirmed-source-status').className = "text-xs text-amber-400 mt-2 text-center";
                 let success = await loadParticipantsFromGoogleSheet();
                 if(!success || participants.length === 0) { alert("⚠️ Không tải được dữ liệu từ Google Sheets!"); return; }
             }
             isSourceConfirmed = true;
-            document.getElementById('confirmed-source-status').innerText = `✅ Đã khóa nguồn dữ liệu!`;
-            document.getElementById('confirmed-source-status').className = "text-xs text-emerald-400 mt-1 font-semibold";
-            alert("Xác nhận nguồn dữ liệu thành công!");
+            document.getElementById('confirmed-source-status').innerHTML = `<span class="material-symbols-outlined text-[14px]">verified</span> Đã chốt nguồn dữ liệu thành công!`;
+            document.getElementById('confirmed-source-status').className = "text-xs text-emerald-400 mt-2 text-center flex items-center justify-center gap-1 font-bold";
         }
 
         async function loadParticipantsFromGoogleSheet() {
@@ -375,7 +497,7 @@
                         let textName = mainParts.join(" - ");
                         return p.boPhan ? (textName ? `${textName} (${String(p.boPhan).trim()})` : String(p.boPhan).trim()) : textName;
                     }).filter(item => item !== "");
-                    document.getElementById('sheet-status-info').innerText = `Đã tải ${participants.length} nhân viên.`;
+                    document.getElementById('sheet-status-info').innerHTML = `<span class="material-symbols-outlined text-[14px]">check_circle</span> Đã tải ${participants.length} nhân viên.`;
                 }
                 if(data.prizes && data.prizes.length > 0) prizes = data.prizes;
                 if(data.settings) applySettingsToUI(data);
@@ -447,15 +569,16 @@
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('btn-tab-control').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
-            document.getElementById('btn-tab-display').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+            document.getElementById('btn-tab-control').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800";
+            document.getElementById('btn-tab-display').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800";
+            
             if (tabName === 'control') {
                 document.getElementById('tab-control').classList.add('active');
-                document.getElementById('btn-tab-control').className = "px-4 py-2 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
+                document.getElementById('btn-tab-control').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
                 updateAdminStats();
             } else {
                 document.getElementById('tab-display').classList.add('active');
-                document.getElementById('btn-tab-display').className = "px-4 py-2 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
+                document.getElementById('btn-tab-display').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
                 syncDisplayScreenInfo();
                 
                 setTimeout(() => {
@@ -466,7 +589,7 @@
         }
 
         function goToDisplayAndReady() {
-            if (!isSourceConfirmed) { alert("⚠️ Vui lòng bấm 'Xác nhận data' trước!"); return; }
+            if (!isSourceConfirmed) { alert("⚠️ Vui lòng bấm 'Chốt Nguồn Dữ Liệu' ở Tab Điều Khiển trước khi mở màn hình!"); return; }
             if (sourceMode === 'google' && participants.length === 0) { alert("⚠️ Danh sách trống!"); return; }
             switchTab('display');
         }
@@ -533,10 +656,11 @@
             let tbody = document.getElementById('prizes-table-body'); tbody.innerHTML = "";
             prizes.forEach((p, idx) => {
                 let tr = document.createElement('tr');
-                tr.innerHTML = `<td class="p-2.5"><input type="text" value="${p.name}" onchange="prizes[${idx}].name = this.value; updatePrizeDropdown();" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
-                <td class="p-2.5"><input type="number" min="1" value="${p.total}" onchange="prizes[${idx}].total = parseInt(this.value)||1; updateAdminStats();" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
-                <td class="p-2.5"><input type="number" min="1" value="${p.perDraw}" onchange="prizes[${idx}].perDraw = parseInt(this.value)||1;" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs"></td>
-                <td class="p-2.5 text-center"><button onclick="removePrize(${idx})" class="text-rose-400 hover:text-rose-300 font-bold px-2 py-1">✕</button></td>`;
+                tr.className = "hover:bg-slate-800/30 transition-colors";
+                tr.innerHTML = `<td class="py-2.5 pr-2"><input type="text" value="${p.name}" onchange="prizes[${idx}].name = this.value; updatePrizeDropdown();" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
+                <td class="py-2.5 px-2"><input type="number" min="1" value="${p.total}" onchange="prizes[${idx}].total = parseInt(this.value)||1; updateAdminStats();" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-2 text-xs text-center focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
+                <td class="py-2.5 px-2"><input type="number" min="1" value="${p.perDraw}" onchange="prizes[${idx}].perDraw = parseInt(this.value)||1;" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-2 text-xs text-center focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
+                <td class="py-2.5 pl-2 text-center"><button onclick="removePrize(${idx})" class="w-8 h-8 rounded-full bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition flex items-center justify-center mx-auto"><span class="material-symbols-outlined text-[16px]">delete</span></button></td>`;
                 tbody.appendChild(tr);
             });
             updatePrizeDropdown();
@@ -544,6 +668,7 @@
         function addPrizeRow() { prizes.push({ id: Date.now(), name: "Giải Mới", total: 1, perDraw: 1, wonCount: 0 }); renderPrizesTable(); }
         function removePrize(idx) { if (prizes.length <= 1) { alert('Phải giữ lại 1 giải!'); return; } prizes.splice(idx, 1); renderPrizesTable(); }
         function savePrizesConfig() { updatePrizeDropdown(); savePrizesConfigToGoogleSheet(); }
+        
         function updatePrizeDropdown() {
             let selectAdmin = document.getElementById('select-active-prize'); let selectDisplay = document.getElementById('display-select-prize');
             [selectAdmin, selectDisplay].forEach(sel => {
@@ -607,7 +732,7 @@
             if (activeP.wonCount >= activeP.total) { alert(`Giải "${activeP.name}" đã trao đủ số lượng!`); return; }
 
             let availablePool = sourceMode === 'number' ? [] : participants.filter(p => !drawnParticipants.has(p));
-            if (sourceMode !== 'number' && availablePool.length === 0) { alert("⚠️ Hết người trong danh sách!"); return; }
+            if (sourceMode !== 'number' && availablePool.length === 0) { alert("⚠️ Không còn ai trong danh sách để quay!"); return; }
 
             document.getElementById('start-draw-container').style.display = 'none'; 
             document.getElementById('action-buttons-bar').style.display = 'none'; 
@@ -671,20 +796,22 @@
 
             let rb = document.getElementById('display-roller-box');
             rb.style.fontSize = ""; 
-            rb.innerHTML = `<span class="text-xl md:text-3xl font-extrabold tracking-widest uppercase text-emerald-400 mb-4">🎉 CHÚC MỪNG NGƯỜI TRÚNG GIẢI 🎉</span>`;
+            rb.innerHTML = `<span class="text-xl md:text-3xl font-extrabold tracking-widest uppercase text-emerald-400 mb-4 inline-block">🎉 CHÚC MỪNG NGƯỜI TRÚNG GIẢI 🎉</span>`;
             
             let currentBodyColor = window.getComputedStyle(document.getElementById('app-body')).color;
             let winnersContainer = document.getElementById('display-winners-container'); winnersContainer.innerHTML = "";
 
-            // Xây dựng thẻ HTML cho TẤT CẢ các thẻ tên
+            // 1. Tạo HTML cho tất cả thẻ với cấu trúc giúp đo kích thước chuẩn nhất
             tempCurrentRoundWinners.forEach(w => {
                 let wrapper = document.createElement('div');
                 wrapper.className = "w-full max-w-[95%] md:max-w-[85%] lg:max-w-[75%] flex justify-center items-center";
                 
                 let card = document.createElement('div');
-                card.className = "winner-card w-full px-6 md:px-10 py-4 md:py-6 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] text-[1.8rem] md:text-[3.5rem] lg:text-[4.5rem] leading-[1.4] font-black tracking-wider text-center flex items-center justify-center whitespace-nowrap";
+                // w-full giúp kích thước khung của tất cả mọi người là bằng nhau (được giới hạn bởi wrapper bên ngoài)
+                card.className = "winner-card w-full px-6 py-4 md:py-6 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] text-[1.8rem] md:text-[3.5rem] lg:text-[4.5rem] leading-[1.4] font-black tracking-wider text-center flex items-center justify-center whitespace-nowrap overflow-hidden";
                 card.style.color = currentBodyColor; 
                 
+                // Thẻ span sẽ chứa text để JS đo bề ngang gốc của chữ
                 let span = document.createElement('span');
                 span.innerText = w;
                 
@@ -693,7 +820,7 @@
                 winnersContainer.appendChild(wrapper);
             });
 
-            // Đồng bộ kích thước thẻ tên hoàn hảo (Global Scaling)
+            // 2. Global Scaling: Đo chữ dài nhất và ép TẤT CẢ các khung về cùng 1 size chữ
             requestAnimationFrame(() => {
                 let cards = winnersContainer.querySelectorAll('.winner-card');
                 if (cards.length === 0) return;
@@ -704,24 +831,21 @@
                     let span = card.querySelector('span');
                     let style = window.getComputedStyle(card);
                     
-                    // Đo kích thước không gian trống bằng cách trừ đi viền/padding chính xác
+                    // Khoảng không gian an toàn bên trong card
                     let paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
                     let availableW = card.clientWidth - paddingX;
                     
-                    // Đo chiều rộng chính xác của phần chữ bên trong
                     let textW = span.scrollWidth;
                     let currentSize = parseFloat(style.fontSize);
                     
-                    // Tính tỷ lệ thu nhỏ để vừa khít 100%
                     if (textW > availableW && textW > 0) {
-                        let neededSize = currentSize * (availableW / textW) * 0.95; // trừ hao 5% an toàn
+                        let neededSize = currentSize * (availableW / textW) * 0.95; 
                         if (neededSize < minSize) minSize = neededSize;
                     } else {
                         if (currentSize < minSize) minSize = currentSize;
                     }
                 });
 
-                // Áp đặt kích thước thu nhỏ này (minSize) lên TẤT CẢ các thẻ, giúp thẻ chữ to đều nhau
                 if (minSize !== Infinity) {
                     cards.forEach(card => {
                         card.style.setProperty('font-size', `${minSize}px`, 'important');
