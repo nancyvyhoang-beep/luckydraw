@@ -1,910 +1,858 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="browser-tab-title">Tech Lucky Draw - Hệ Thống Quay Thưởng</title>
-    <link id="browser-favicon" rel="icon" type="image/png" href="">
-    <!-- Tailwind CSS CDN -->
+    <title>CH TRADING RACING</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 500: '#6366f1', 600: '#4f46e5', glow: '#818cf8' }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        /* Glass Panels cao cấp */
-        .glass-panel { background: rgba(11, 19, 38, 0.65); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); }
-        .glass-panel-admin { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        
-        /* Input & Forms Admin */
-        .admin-input { background: rgba(2, 6, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #f8fafc; font-size: 0.875rem; transition: all 0.2s ease; outline: none; }
-        .admin-input:focus { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); background: rgba(2, 6, 23, 0.8); }
-        .admin-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.375rem; }
-        
-        /* Chỉnh Color Picker cho sang trọng */
-        input[type="color"] { -webkit-appearance: none; padding: 0; border: none; border-radius: 0.5rem; overflow: hidden; cursor: pointer; }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.5rem; }
+        :root {
+            --bg-layer: radial-gradient(circle at 50% 0%, #1e2530 0%, #0b0e14 60%, #030406 100%);
+            --primary-color: #38bdf8;
+            --secondary-color: #f43f5e;
+            --panel-bg: rgba(18, 22, 29, 0.85);
+            --text-main: #f8fafc;
+            --input-bg: rgba(0, 0, 0, 0.5);
+            --border-color: rgba(56, 189, 248, 0.2);
+        }
 
-        .tab-content { display: none !important; }
-        .tab-content.active { display: block !important; }
+        body { 
+            margin: 0; overflow: hidden; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background-image: var(--bg-layer) !important; background-size: cover !important;
+            background-position: center !important; background-repeat: no-repeat !important;
+            background-attachment: fixed !important; background-color: #030406 !important;
+            color: var(--text-main) !important; transition: all 0.5s ease;
+        }
+
+        .bento-panel { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
+            transition: all 0.4s ease;
+        }
+
+        .text-muted { color: var(--text-main); opacity: 0.65; }
+        .theme-text-gradient { 
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary-color) 100%); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .theme-btn { 
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
+            color: #fff; font-weight: 600; letter-spacing: 0.025em;
+            box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .theme-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .theme-text { color: var(--primary-color); }
         
-        .winner-card { animation: cinematicPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes cinematicPop { 0% { transform: scale(0.85); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0px); } }
+        .shadow-glow { box-shadow: 0 0 30px var(--primary-color); }
+        .finish-line { background: linear-gradient(to bottom, #fff, var(--primary-color), #fff); box-shadow: 0 0 20px var(--primary-color); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         
-        .brand-btn { background-color: var(--brand-btn-bg, #4f46e5); color: var(--brand-btn-text, #ffffff); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .brand-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 10px 20px -10px var(--brand-btn-bg, #4f46e5); }
-        .brand-btn:active { transform: translateY(0); }
+        .custom-input { 
+            background: var(--input-bg); border: 1px solid var(--border-color); 
+            transition: all 0.3s ease; color: var(--text-main); border-radius: 0.75rem; 
+        }
+        .custom-input:focus { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); outline: none; }
+        .custom-input option { background: #0f1218; color: #fff; }
+
+        input[type="color"] { -webkit-appearance: none; border: none; padding: 0; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); border-radius: 6px; }
+
+        .racing-toolbar { position: absolute; top: 0; left: 0; right: 0; z-index: 100; transform: translateY(-100%); opacity: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+        .racing-toolbar.show-toolbar { transform: translateY(0); opacity: 1; }
+        .hover-trigger-area { position: absolute; top: 0; left: 0; right: 0; height: 50px; z-index: 99; }
+
+        .racer-wrapper { position: absolute; display: flex; align-items: center; z-index: 30; transition: left 0.1s linear, top 0.1s linear; }
         
-        #brand-logo-img { max-height: 32px; width: auto; object-fit: contain; }
+        .racer-icon-flip { display: inline-block; transform: scaleX(-1); animation: horseBounce 0.25s infinite alternate ease-in-out; filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.5)); line-height: 1; }
+        @keyframes horseBounce { 0% { transform: scaleX(-1) translateY(2px) rotate(-3deg); } 100% { transform: scaleX(-1) translateY(-2px) rotate(3deg); } }
+
+        .racer-icon { display: inline-block; animation: bounceAnim 0.3s infinite alternate; filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.5)); line-height: 1; }
+        @keyframes bounceAnim { 0% { transform: translateY(2px) rotate(-3deg); } 100% { transform: translateY(-2px) rotate(3deg); } }
+
+        .racer-icon-bird { display: inline-block; transform: scaleX(1); animation: birdFlyAnim 0.25s infinite alternate ease-in-out; filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.5)); line-height: 1; }
+        @keyframes birdFlyAnim { 0% { transform: scaleX(1) translateY(2px) rotate(-4deg); } 100% { transform: scaleX(1) translateY(-2px) rotate(4deg); } }
+
+        .speed-trail { position: absolute; right: 85%; height: 2px; background: linear-gradient(to right, transparent, var(--primary-color)); border-radius: 5px; opacity: 0.7; pointer-events: none; }
+        .trail-1 { transform: translateY(-6px); width: 25px; } 
+        .trail-2 { transform: translateY(0px); width: 35px; } 
+        .trail-3 { transform: translateY(6px); width: 18px; }
+
+        /* ================= BACKGROUND ĐƯỜNG ĐUA ================= */
+        .track-bg-horse { 
+            background: linear-gradient(180deg, #3d2617 0%, #17100b 100%); 
+            position: relative; overflow-y: auto; overflow-x: hidden;
+        }
+        .track-bg-horse::before {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+            background: repeating-linear-gradient(90deg, #92400e, #92400e 16px, #451a03 16px, #451a03 32px, #b45309 32px, #b45309 38px);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.6);
+            animation: fenceMove 2.5s linear infinite; pointer-events: none;
+        }
+        @keyframes fenceMove { 0% { background-position: 0 0; } 100% { background-position: -76px 0; } }
+        .effect-dust { position: absolute; right: 75%; bottom: -4px; width: 18px; height: 6px; background: rgba(222, 184, 135, 0.7); border-radius: 50%; filter: blur(2px); animation: dustAnim 0.35s infinite linear; }
+        @keyframes dustAnim { 0% { transform: scale(0.4); opacity: 0.9; } 100% { transform: scale(1.8) translateX(-20px); opacity: 0; } }
+        .track-lane-horse { border-bottom: 1px solid rgba(217, 119, 6, 0.3); background: rgba(139, 69, 19, 0.15); }
+
+        .track-bg-car { background: #0b0f19; background-image: linear-gradient(90deg, rgba(56, 189, 248, 0.05) 50%, transparent 50%); background-size: 80px 100%; overflow-y: auto; overflow-x: hidden; }
+        .effect-smoke { position: absolute; right: 70%; top: 30%; width: 14px; height: 14px; background: rgba(180, 180, 180, 0.65); border-radius: 50%; filter: blur(3px); animation: smokeAnim 0.3s infinite linear; }
+        @keyframes smokeAnim { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(2.2) translateY(-8px) translateX(-20px); opacity: 0; } }
+        .track-lane-car { border-bottom: 1px dashed rgba(56, 189, 248, 0.3); background: rgba(30, 41, 59, 0.6); }
+
+        .track-bg-duck { 
+            background: linear-gradient(180deg, #022c43 0%, #011627 100%); 
+            position: relative; overflow-y: auto; overflow-x: hidden;
+        }
+        .track-bg-duck::before {
+            content: ''; position: absolute; inset: 0; opacity: 0.15; pointer-events: none;
+            background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(56,189,248,0.3) 20px, rgba(56,189,248,0.3) 24px);
+            animation: waterFlow 4s linear infinite;
+        }
+        @keyframes waterFlow { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
+        .track-lane-duck { border-bottom: 1px solid rgba(56, 189, 248, 0.4); background: rgba(3, 105, 161, 0.2); }
+
+        .track-bg-bird { 
+            background: linear-gradient(180deg, #1e40af 0%, #0f172a 100%); 
+            position: relative; overflow-y: auto; overflow-x: hidden;
+        }
+        .track-bg-bird::before {
+            content: ''; position: absolute; inset: 0; opacity: 0.3; pointer-events: none;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            background-repeat: repeat-x;
+            background-size: 500px 100%;
+            animation: cloudSmoothLoop 15s linear infinite;
+        }
+        @keyframes cloudSmoothLoop { 0% { background-position: 0 0; } 100% { background-position: 500px 0; } }
+        .effect-cloud { position: absolute; right: 70%; top: 20%; width: 26px; height: 8px; background: rgba(255, 255, 255, 0.5); border-radius: 10px; filter: blur(2px); animation: cloudFly 0.4s infinite linear; }
+        @keyframes cloudFly { 0% { transform: translateX(0); opacity: 0.7; } 100% { transform: translateX(-30px); opacity: 0; } }
+        .track-lane-bird { border-bottom: 1px dashed rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.05); }
+
+        .track-bg-boat { 
+            background: linear-gradient(180deg, #0f766e 0%, #042f2e 100%); 
+            position: relative; overflow-y: auto; overflow-x: hidden;
+        }
+        .track-lane-boat { border-bottom: 2px solid rgba(45, 212, 191, 0.35); background: rgba(20, 184, 166, 0.15); }
+
+        /* ================= HIỆU ỨNG ĐẶC BIỆT ================= */
+        .vip-turbo { z-index: 900 !important; }
+        .vip-turbo .racer-icon, .vip-turbo .racer-icon-flip, .vip-turbo .racer-icon-bird {
+            transform: scale(1.4) !important;
+            filter: drop-shadow(0 0 25px var(--secondary-color)) brightness(1.4) !important;
+        }
+
+        .winner-pop { z-index: 9999 !important; transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+        .winner-pop .racer-icon, .winner-pop .racer-icon-flip, .winner-pop .racer-icon-bird {
+            animation: crazyDance 0.25s infinite alternate ease-in-out !important; 
+            filter: drop-shadow(0 0 40px var(--primary-color)) drop-shadow(0 0 80px var(--secondary-color)) brightness(1.6) !important;
+        }
+        .winner-pop div:first-child { 
+            font-size: 1.5rem !important; line-height: 2rem !important; 
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important; 
+            color: #fff !important; padding: 10px 24px !important; border-radius: 1rem !important; 
+            border: 2px solid rgba(255,255,255,0.3) !important; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6) !important;
+            margin-bottom: 20px !important; transform: scale(1.3);
+        }
         
-        .roller-wrapper { width: 100%; text-align: center; display: flex; justify-content: center; align-items: center; }
-        .roller-slot { display: block; transition: transform 0.05s ease-in-out; white-space: nowrap; padding: 0.5rem 0; line-height: 1.4; will-change: transform; }
-        .sync-title { color: var(--title-text-color, inherit) !important; }
-        .text-glow-premium { text-shadow: 0 0 12px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.4), 0 0 45px rgba(255, 255, 255, 0.2); }
+        @keyframes crazyDance {
+            0% { transform: translateY(0) rotate(-15deg) scale(1); }
+            100% { transform: translateY(-35px) rotate(15deg) scale(1.15); }
+        }
+        
+        .loser-fade { opacity: 0.08 !important; filter: grayscale(100%) blur(4px) !important; transform: scale(0.4) !important; z-index: 0 !important; }
     </style>
 </head>
-<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col p-4 md:p-6 transition-all duration-300 bg-cover bg-center bg-no-repeat relative overflow-x-hidden" style="font-family: 'Be Vietnam Pro', sans-serif;">
+<body class="h-screen flex flex-col">
 
-    <!-- STITCH_SHADER_START:ANIMATION_4 -->
-    <div class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-40 mix-blend-screen" style="display:block;">
-        <canvas id="shader-canvas-ANIMATION_4" style="display:block;width:100%;height:100%"></canvas>
-    </div>
-    <script>
-    (function() {
-      const canvas = document.getElementById('shader-canvas-ANIMATION_4');
-      if (!canvas) return;
-      function syncSize() {
-        const w = canvas.clientWidth  || window.innerWidth;
-        const h = canvas.clientHeight || window.innerHeight;
-        if (canvas.width !== w || canvas.height !== h) { canvas.width  = w; canvas.height = h; }
-      }
-      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncSize).observe(canvas);
-      syncSize();
+    <audio id="bgMusic" loop preload="auto" src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=suspense-113264.mp3"></audio>
+    <audio id="winAudio" preload="auto" src="winner.mp3"></audio>
 
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) return;
-      const vs = `attribute vec2 a_position; varying vec2 v_texCoord; void main() { v_texCoord = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 1.0); }`;
-      const fs = `precision highp float; varying vec2 v_texCoord; uniform float u_time;
-      void main() { vec2 uv = v_texCoord; vec3 color1 = vec3(0.043, 0.075, 0.149); vec3 color2 = vec3(0.388, 0.4, 0.945); vec3 color3 = vec3(0.063, 0.725, 0.506);
-      float noise = sin(uv.x * 10.0 + u_time) * cos(uv.y * 10.0 + u_time); float glow = 0.1 / length(uv - 0.5 + 0.2 * vec2(sin(u_time * 0.5), cos(u_time * 0.3)));
-      vec3 color = mix(color1, color2, clamp(noise + glow, 0.0, 1.0)); color = mix(color, color3, clamp(glow * 0.5, 0.0, 0.2)); gl_FragColor = vec4(color, 1.0); }`;
-      function cs(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
-      const prog = gl.createProgram(); gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); gl.useProgram(prog);
-      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-      const pos = gl.getAttribLocation(prog, 'a_position'); gl.enableVertexAttribArray(pos); gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-      const uTime = gl.getUniformLocation(prog, 'u_time');
-      function render(t) { gl.viewport(0, 0, canvas.width, canvas.height); if (uTime) gl.uniform1f(uTime, t * 0.001); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(render); }
-      render(0);
-    })();
-    </script>
-    <!-- STITCH_SHADER_END -->
+    <div id="setupMode" class="w-full h-full overflow-y-auto p-4 md:p-8 flex items-center justify-center">
+        <div class="bento-panel rounded-[2rem] p-6 md:p-8 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-4 gap-8 relative">
+            
+            <div class="lg:col-span-1 flex flex-col gap-4 border-r border-white/10 pr-0 lg:pr-6">
+                <div class="text-center mb-2">
+                    <h1 id="mainTitleDisplay" ondblclick="toggleVipPanel()" class="text-2xl lg:text-3xl font-black tracking-tight theme-text-gradient uppercase cursor-default select-none transition-all hover:opacity-90">CH TRADING</h1>
+                    <!-- Ô SUBTITLE ĐƯỢC THIẾT KẾ DẠNG INPUT RÕ RÀNG, DỄ CLICK VÀ CHỈNH SỬA -->
+                    <input type="text" id="subtitleInput" value="MASTER EDITION" class="custom-input w-full mt-2 py-1 px-3 text-center text-xs font-semibold tracking-widest uppercase cursor-pointer">
+                </div>
 
-    <!-- Top Navigation -->
-    <header class="max-w-7xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-white/5 gap-4 relative z-10 mb-4">
-        <div class="flex items-center space-x-3">
-            <img id="brand-logo-img" src="" alt="Logo" class="hidden">
-            <div id="brand-logo-dot" class="w-3.5 h-3.5 bg-indigo-500 rounded-full animate-ping"></div>
-            <h1 id="header-event-title" class="text-xl md:text-2xl font-black tracking-wide cursor-pointer sync-title" ondblclick="openSecretWinnerModal()">
-                TECH SUMMIT 2026 - LUCKY DRAW
-            </h1>
-        </div>
-        <div class="flex space-x-2 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
-            <button onclick="switchTab('control')" id="btn-tab-control" class="px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg">
-                <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">tune</span> Điều khiển (Admin)</span>
-            </button>
-            <button onclick="switchTab('display')" id="btn-tab-display" class="px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800">
-                <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">tv</span> Màn hình (Display)</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl w-full mx-auto flex-grow flex flex-col relative z-10">
-        
-        <!-- ================= TAB 1: TRANG ĐIỀU KHIỂN (ADMIN PANEL) ================= -->
-        <div id="tab-control" class="tab-content active w-full">
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
-                
-                <!-- Cột Trái (Cài đặt) -->
-                <div class="xl:col-span-8 space-y-6 lg:space-y-8">
+                <div class="bg-black/30 rounded-2xl p-5 border border-white/5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-sm tracking-wide theme-text">📋 Lịch Sử Đua</h3>
+                        <span id="roundCounterBadge" class="text-xs bg-white/10 px-2.5 py-1 rounded-lg text-white font-semibold border border-white/10">Vòng 1</span>
+                    </div>
                     
-                    <!-- Nguồn dữ liệu -->
-                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
-                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                                <span class="material-symbols-outlined text-[18px]">database</span>
-                            </div>
-                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-indigo-100 sync-title">Nguồn Dữ Liệu Tham Gia</h2>
-                        </div>
-                        
-                        <div class="space-y-5">
-                            <div>
-                                <label class="admin-label">Phương thức kết nối</label>
-                                <select id="input-source-mode" onchange="toggleSourceMode()" class="w-full admin-input cursor-pointer">
-                                    <option value="google">☁️ Đồng bộ tự động từ Google Sheets</option>
-                                    <option value="number">🔢 Trình tạo ngẫu nhiên (Khoảng số)</option>
-                                    <option value="file">📁 Tải lên tệp cục bộ (.CSV / .TXT)</option>
-                                </select>
-                            </div>
-
-                            <div id="source-google-box" class="p-5 bg-slate-900/40 rounded-2xl border border-indigo-500/20 relative overflow-hidden">
-                                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-                                <label class="admin-label text-indigo-300">Google Apps Script Web App URL</label>
-                                <div class="flex flex-col sm:flex-row gap-3 mt-2">
-                                    <input type="text" id="input-gsheet-url" value="https://script.google.com/macros/s/AKfycbyl3OnH8j8gEILpMSvkZd_z0l8pA5dgMIl6yF6icVyP-OaE3_Bq7NxZXqZLgDfJZwNZ/exec" class="w-full admin-input text-indigo-200 font-mono text-xs">
-                                    <button onclick="loadParticipantsFromGoogleSheet()" class="px-6 py-3 brand-btn font-bold rounded-xl whitespace-nowrap flex items-center justify-center gap-2">
-                                        <span class="material-symbols-outlined text-[18px]">sync</span> Đồng Bộ
-                                    </button>
-                                </div>
-                                <p id="sheet-status-info" class="text-xs text-emerald-400 font-medium mt-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Trạng thái: Đã sẵn sàng kết nối.</p>
-                            </div>
-
-                            <div id="source-number-box" style="display: none;" class="grid grid-cols-2 gap-4 p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
-                                <div><label class="admin-label">Từ số</label><input type="number" id="num-from" value="1" min="1" max="99999999" class="w-full admin-input font-mono"></div>
-                                <div><label class="admin-label">Đến số</label><input type="number" id="num-to" value="99999999" min="1" max="99999999" class="w-full admin-input font-mono"></div>
-                            </div>
-
-                            <div id="source-file-box" style="display: none;" class="p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
-                                <div class="flex justify-between items-center mb-3">
-                                    <label class="admin-label mb-0">Tải lên danh sách</label>
-                                    <button onclick="downloadSampleCSV()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">download</span> File Mẫu</button>
-                                </div>
-                                <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer transition">
-                            </div>
-
-                            <div class="pt-2">
-                                <button onclick="confirmDataSource()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span> Chốt Nguồn Dữ Liệu
-                                </button>
-                                <p id="confirmed-source-status" class="text-xs text-slate-500 mt-2 text-center">Bạn cần chốt dữ liệu trước khi quay.</p>
-                            </div>
-                        </div>
+                    <div id="historyList" class="flex-1 overflow-y-auto flex flex-col gap-2 mb-4 max-h-[30vh] lg:max-h-[40vh]">
+                        <p class="text-muted text-xs text-center italic mt-6" id="emptyHistoryMsg">Chưa có kết quả ghi nhận</p>
                     </div>
 
-                    <!-- Brand Guidelines -->
-                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
-                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400">
-                                <span class="material-symbols-outlined text-[18px]">palette</span>
-                            </div>
-                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-rose-100 sync-title">Brand Guidelines & Giao Diện</h2>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                            <div><label class="admin-label">Loại Background</label><select id="bg-type" onchange="toggleBgInputs()" class="w-full admin-input cursor-pointer"><option value="solid">Màu Solid (Trơn)</option><option value="gradient">Màu Gradient (Chuyển sắc)</option><option value="image">Hình Ảnh (16:9)</option></select></div>
-                            <div><label class="admin-label">Phông chữ hiển thị</label><select id="custom-font-family" class="w-full admin-input cursor-pointer"><option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro (Chuẩn TV)</option><option value="'Inter', sans-serif">Inter (Hiện đại)</option></select></div>
-                            
-                            <div id="bg-solid-box"><label class="admin-label">Màu nền chính</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-bg-solid" value="#090d16" class="w-full h-full"></div></div>
-                            <div id="bg-gradient-box" style="display: none;" class="grid grid-cols-2 gap-3">
-                                <div><label class="admin-label">Màu bắt đầu</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-1" value="#0f172a" class="w-full h-full"></div></div>
-                                <div><label class="admin-label">Màu kết thúc</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-2" value="#311042" class="w-full h-full"></div></div>
-                            </div>
-                            <div id="bg-image-box" style="display: none;"><label class="admin-label">Ảnh nền (16:9)</label><input type="file" id="custom-bg-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-800 file:text-white cursor-pointer mt-1"></div>
-                            
-                            <div><label class="admin-label">Màu chữ (Tiêu đề)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-title-color" value="#f8fafc" class="w-full h-full"></div></div>
-                            <div><label class="admin-label">Màu chữ (Nội dung)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-text-color" value="#f8fafc" class="w-full h-full"></div></div>
-                            
-                            <div><label class="admin-label">Màu nút tương tác</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-brand-btn-color" value="#4f46e5" class="w-full h-full"></div></div>
-                            <div><label class="admin-label">Thời gian lướt số (Giây)</label><input type="number" id="input-spin-duration" min="1" max="15" value="3" class="w-full admin-input font-bold text-center"></div>
-                            
-                            <div class="md:col-span-2 pt-2 pb-2"><label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="auto-text-contrast" checked class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500"><span class="text-sm font-semibold text-slate-300">Tự động cân đối tương phản màu chữ với nền</span></label></div>
-                            
-                            <div class="md:col-span-2"><label class="admin-label">Upload Logo Sự Kiện (Tùy chọn)</label><input type="file" id="custom-logo-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 cursor-pointer"></div>
-                        </div>
-                        
-                        <button onclick="applyBrandGuidelines()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 shadow-lg">
-                            <span class="material-symbols-outlined text-[18px]">format_paint</span> Lưu & Áp Dụng Nhận Diện Thương Hiệu
-                        </button>
-                    </div>
-
-                    <!-- Quản lý Giải thưởng -->
-                    <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-700/50 pb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400"><span class="material-symbols-outlined text-[18px]">emoji_events</span></div>
-                                <h2 class="text-sm font-black uppercase tracking-[0.15em] text-amber-100 sync-title">Cơ Cấu Giải Thưởng</h2>
-                            </div>
-                            <button onclick="addPrizeRow()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1 border border-slate-700"><span class="material-symbols-outlined text-[16px]">add</span> Thêm Giải</button>
-                        </div>
-                        
-                        <div class="overflow-x-auto mt-4">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
-                                        <th class="pb-3 font-semibold pl-2">Tên Giải Thưởng</th>
-                                        <th class="pb-3 font-semibold w-28 text-center">Tổng Giải</th>
-                                        <th class="pb-3 font-semibold w-32 text-center">Quay Mỗi Lượt</th>
-                                        <th class="pb-3 font-semibold w-16 text-center">Xóa</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="prizes-table-body" class="divide-y divide-slate-800/50"></tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="pt-4">
-                            <button onclick="savePrizesConfig()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition border border-slate-700 flex justify-center items-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Đồng bộ cấu hình lên Cloud (Sheets)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cột Phải (Control Center - Sticky) -->
-                <div class="xl:col-span-4 relative">
-                    <div class="sticky top-6 glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6 shadow-2xl border-t border-indigo-500/30">
-                        
-                        <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                                <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
-                            </div>
-                            <h2 class="text-sm font-black uppercase tracking-[0.15em] text-emerald-100 sync-title">Trung Tâm Điều Khiển</h2>
-                        </div>
-
-                        <div class="space-y-5">
-                            <div>
-                                <label class="admin-label">Tên Sự Kiện Hiển Thị</label>
-                                <input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo(); savePrizesConfigToGoogleSheet();" class="w-full admin-input font-bold text-indigo-300">
-                            </div>
-                            
-                            <div>
-                                <label class="admin-label text-amber-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">target</span> Chế Độ Quay Hiện Tại</label>
-                                <div class="relative">
-                                    <select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full admin-input py-4 font-black text-white bg-indigo-950/40 border-indigo-500/50 focus:border-indigo-400 cursor-pointer appearance-none pl-4 pr-10"></select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"><span class="material-symbols-outlined">expand_more</span></div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
-                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tổng ngân sách giải:</span> <span id="info-total-prize" class="font-black text-lg text-amber-400">1</span></div>
-                                <div class="w-full h-[1px] bg-slate-800"></div>
-                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tiến độ trao giải:</span> <span id="info-won-prize" class="font-black text-lg text-emerald-400">0 / 1</span></div>
-                                <div class="w-full h-[1px] bg-slate-800"></div>
-                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Số suất quay/lượt:</span> <span id="info-per-draw" class="font-black text-lg text-indigo-400">1</span></div>
-                            </div>
-                        </div>
-
-                        <div class="pt-4 space-y-3">
-                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn py-5 rounded-2xl font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)]">
-                                <span class="material-symbols-outlined">smart_display</span> MỞ MÀN HÌNH QUAY
-                            </button>
-                            
-                            <button onclick="exportResult()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
-                                <span class="material-symbols-outlined text-[18px]">download</span> Tải Báo Cáo KQ (CSV)
-                            </button>
-                            
-                            <div class="grid grid-cols-2 gap-3 pt-2">
-                                <button onclick="resetWinnersOnly()" class="py-3 bg-amber-950/30 hover:bg-amber-900/50 text-amber-400 text-xs font-bold rounded-xl transition border border-amber-900/50 flex flex-col items-center justify-center gap-1">
-                                    <span class="material-symbols-outlined text-[16px]">restart_alt</span> Khôi phục KQ
-                                </button>
-                                <button onclick="resetSystem()" class="py-3 bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs font-bold rounded-xl transition border border-rose-900/50 flex flex-col items-center justify-center gap-1">
-                                    <span class="material-symbols-outlined text-[16px]">power_settings_new</span> Reset Hệ Thống
-                                </button>
-                            </div>
-                        </div>
-                        
-                    </div>
+                    <button onclick="exportExcel()" class="w-full py-3 bg-emerald-600/80 hover:bg-emerald-600 rounded-xl font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg border border-emerald-500/30 text-white">
+                        <span>📊</span> Xuất file Excel
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= TAB 2: MÀN HÌNH QUAY SỐ (CINEMATIC DISPLAY PANEL) ================= -->
-        <div id="tab-display" class="tab-content w-full h-full">
-            <div class="glass-panel p-6 md:p-12 rounded-3xl h-full flex flex-col justify-between shadow-[0_25px_60px_rgba(0,0,0,0.6)] relative border border-indigo-500/20">
+            <div class="lg:col-span-3 flex flex-col gap-5">
                 
-                <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-                <!-- KHU VỰC HEADER -->
-                <div class="flex flex-col items-center gap-4 w-full relative z-10 flex-shrink-0">
-                    <div class="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-slate-900/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_0_25px_rgba(99,102,241,0.2)]">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
-                        <span id="display-event-badge" class="font-bold text-xs uppercase tracking-[0.3em] text-indigo-300 cursor-pointer sync-title" ondblclick="openSecretWinnerModal()">LUCKY DRAW</span>
+                <div class="bento-panel p-5 rounded-2xl flex flex-col gap-4">
+                    <div class="flex justify-between items-center w-full flex-wrap gap-2">
+                        <label class="text-xs uppercase tracking-wider font-bold theme-text flex items-center gap-2"><span>🎨</span> Không Gian & Thương Hiệu</label>
+                        <button onclick="toggleFullScreen()" class="text-xs font-semibold px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all flex items-center gap-2">
+                            Mở Toàn Màn Hình <span>📺</span>
+                        </button>
                     </div>
-                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-black tracking-tight text-white text-center text-glow-premium">Tên Giải Thưởng</h2>
-                </div>
-
-                <!-- KHU VỰC TRUNG TÂM: CHỮ LUÔN ĐỒNG BỘ -->
-                <div class="flex-grow flex flex-col items-center justify-center gap-8 w-full relative z-10 py-8">
-                    <div id="roller-wrapper" class="roller-wrapper px-4 min-h-[140px] md:min-h-[160px]">
-                        <div id="display-roller-box" class="roller-slot font-black tracking-widest text-white text-glow-premium" style="font-size: 5.5rem;">
-                            SẴN SÀNG
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="flex items-center gap-3 bg-black/30 p-2.5 rounded-xl border border-white/5">
+                            <label class="text-xs font-semibold text-muted whitespace-nowrap">Tên sự kiện:</label>
+                            <input type="text" id="eventNameInput" value="CH TRADING" oninput="updateEventName(this.value)" class="flex-1 bg-transparent border-none outline-none text-white text-xs font-bold tracking-wide" placeholder="Nhập tên sự kiện...">
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 items-center justify-start md:justify-end">
+                            <button onclick="changeTheme('gala')" class="text-xs font-medium px-3.5 py-2 bg-[#12161d] border border-[#38bdf8]/40 text-white rounded-xl hover:scale-105 transition">Gala Tối</button>
+                            <button onclick="changeTheme('cyber')" class="text-xs font-medium px-3.5 py-2 bg-[#020617] border border-[#00f2fe]/50 text-white rounded-xl hover:scale-105 transition">Cyberpunk</button>
+                            <button onclick="changeTheme('royal')" class="text-xs font-medium px-3.5 py-2 bg-[#1c0505] border border-[#ffd700]/50 text-white rounded-xl hover:scale-105 transition">Hoàng Gia</button>
                         </div>
                     </div>
-                    <!-- Danh sách khung đồng bộ -->
-                    <div id="display-winners-container" class="flex flex-col justify-center items-center gap-5 w-full pt-2 pb-6 px-2"></div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="flex items-center gap-3 bg-black/30 p-2.5 rounded-xl border border-white/5 col-span-2 md:col-span-1">
+                            <label class="text-xs font-semibold text-muted flex-1">Màu chữ:</label>
+                            <input type="color" id="textColorPicker" value="#f8fafc" onchange="updateTextColor(event)" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent">
+                        </div>
+                        <div class="flex items-center gap-3 bg-black/30 p-2.5 rounded-xl border border-white/5 col-span-2 md:col-span-3">
+                            <label class="text-xs font-semibold text-muted whitespace-nowrap">Ảnh nền (16:9):</label>
+                            <input type="file" id="bgUpload" accept="image/*" class="hidden" onchange="uploadBackground(event)">
+                            <button onclick="document.getElementById('bgUpload').click()" id="uploadBtnText" class="flex-1 text-xs font-semibold px-3 py-1.5 bg-white/5 text-white/80 rounded-lg hover:bg-white/10 transition truncate border border-white/10 text-left">
+                                📁 Tải hình nền tuỳ chỉnh...
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Cụm Action Buttons -->
-                <div id="action-buttons-bar" class="hidden flex flex-col sm:flex-row justify-center items-center gap-5 pb-4 relative z-10 flex-shrink-0">
-                    <div class="flex items-center gap-3">
-                        <button onclick="saveAndNext()" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-2xl shadow-[0_0_30px_rgba(52,211,153,0.4)] border-2 border-emerald-400 transition flex items-center space-x-2.5">
-                            <span class="material-symbols-outlined text-[20px]">check_circle</span><span>Lưu kết quả & tiếp tục quay</span>
-                        </button>
-                        <span id="save-status-toast" class="text-xs text-emerald-400 font-bold opacity-0 transition-opacity duration-300">✓ Đã lưu giải</span>
-                    </div>
-                    <button onclick="discardAndRetry()" class="px-8 py-4 bg-rose-600/80 hover:bg-rose-600 text-white font-black text-sm rounded-2xl shadow-[0_0_25px_rgba(225,29,72,0.3)] border-2 border-rose-500 transition flex items-center space-x-2.5">
-                        <span class="material-symbols-outlined text-[20px]">replay</span><span>Xoá kết quả & Quay lại</span>
+                <div id="game-over-container" class="hidden flex-col items-center justify-center h-full text-center p-12 bg-black/30 rounded-2xl border border-white/5">
+                    <div class="text-6xl mb-4 animate-bounce">👑</div>
+                    <h2 class="text-2xl font-bold tracking-tight theme-text mb-4">Đã hoàn tất toàn bộ giải đấu!</h2>
+                    <button onclick="resetFullGame()" class="px-8 py-3.5 theme-btn rounded-xl font-bold text-sm tracking-wider uppercase">
+                        Khởi Tạo Giải Đấu Mới
                     </button>
                 </div>
 
-                <!-- Nút Bắt đầu quay -->
-                <div id="start-draw-container" class="w-full max-w-lg mx-auto pb-4 relative z-10 flex-shrink-0">
-                    <button onclick="startSpinningAnimation()" id="btn-start-spin" class="w-full brand-btn font-black text-xl py-4.5 rounded-2xl shadow-[0_10px_35px_rgba(79,70,229,0.4)] transition transform active:scale-95 tracking-widest uppercase flex items-center justify-center gap-3">
-                        <span class="material-symbols-outlined text-[24px]">casino</span><span>Bắt đầu quay số</span>
+                <div id="setup-controls" class="flex flex-col gap-4">
+                    <div id="settingsGrid" class="grid grid-cols-1 lg:grid-cols-1 gap-4">
+                        
+                        <div class="bento-panel p-5 rounded-2xl flex flex-col gap-4">
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] text-muted mb-1.5 uppercase tracking-wider font-bold">Số lượng</label>
+                                    <input type="number" id="numHorses" value="5" min="2" max="150" class="custom-input w-full p-2.5 text-center text-sm font-bold">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] text-muted mb-1.5 uppercase tracking-wider font-bold">Thời gian (s)</label>
+                                    <input type="number" id="raceDuration" value="10" min="5" class="custom-input w-full p-2.5 text-center text-sm font-bold">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] text-muted mb-1.5 uppercase tracking-wider font-bold">Top Thắng</label>
+                                    <input type="number" id="topN" value="1" min="1" max="20" class="custom-input w-full p-2.5 text-center text-sm font-bold">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] text-muted mb-1.5 uppercase tracking-wider font-bold">Nhân vật</label>
+                                    <select id="racerType" class="custom-input w-full p-2.5 text-center text-sm font-bold appearance-none cursor-pointer">
+                                        <option value="horse">🐎 Ngựa</option>
+                                        <option value="car">🏎️ Xe Hơi</option>
+                                        <option value="duck">🐥 Vịt Vàng</option>
+                                        <option value="bird">🦅 Chim</option>
+                                        <option value="boat">⛵ Thuyền</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] text-muted mb-1.5 uppercase tracking-wider font-bold text-cyan-400">Kiểu Đua</label>
+                                    <select id="raceModeSelect" class="custom-input w-full p-2.5 text-center text-sm font-bold appearance-none cursor-pointer border-cyan-500/40 text-cyan-300">
+                                        <option value="lanes">➖ Theo làn</option>
+                                        <option value="random">🌀 Tự do</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="handleGenerateBtn()" class="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all">Tạo Form Điền Tên</button>
+                            </div>
+
+                            <div class="pt-3 border-t border-white/5 flex gap-2">
+                                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importCSV(event)">
+                                <button onclick="document.getElementById('csvFileInput').click()" class="flex-1 py-2.5 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 rounded-xl text-sky-300 text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-2">
+                                    <span>📁</span> Nhập từ file Excel (CSV)
+                                </button>
+                                <a href="data:text/csv;charset=utf-8,%EF%BB%BFTenNguoiChoi%0ANguyen%20Van%20A%0ATran%20Thi%20B%0ALe%20Van%20C%0APham%20Van%20D" download="Mau_DanhSach.csv" class="flex-1 flex items-center justify-center text-[11px] text-center border border-white/10 rounded-xl hover:bg-black/20 transition text-muted font-semibold bg-black/10">
+                                    Tải mẫu
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- PANEL VIP ẨN TÀNG HÌNH -->
+                        <div id="vipPanel" class="bento-panel p-5 rounded-2xl relative overflow-hidden flex-col justify-center hidden border border-amber-500/40 shadow-glow">
+                            <label class="block text-xs uppercase tracking-wider theme-text mb-2 font-bold flex items-center gap-2">
+                                <span>🎯</span> Điều khiển kết quả (VIP Hạng 1)
+                            </label>
+                            <select id="targetWinner" class="custom-input w-full p-3 appearance-none cursor-pointer relative font-bold text-xs text-amber-300 border-amber-500/30">
+                                <option value="random">🎲 Ngẫu nhiên (Công bằng 100%)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bento-panel rounded-2xl p-5 flex-1">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-xs uppercase tracking-wider text-muted">Danh sách vận động viên (<span id="horseCountDisplay" class="theme-text">0</span>)</h3>
+                        </div>
+                        <div id="horseInputs" class="max-h-[25vh] overflow-y-auto pr-2 grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                        </div>
+                    </div>
+
+                    <button onclick="startRace()" class="w-full py-4 theme-btn rounded-2xl font-black text-lg tracking-widest uppercase shadow-glow transition-all flex items-center justify-center gap-3">
+                        Bắt Đầu Tranh Tài <span>🏁</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- THANH ĐIỀU KHIỂN DƯỚI ĐÁY -->
-                <div class="w-full flex flex-wrap items-center justify-between gap-4 bg-slate-900/85 backdrop-blur-xl px-6 py-4 rounded-2xl border border-slate-800 text-xs relative z-10 flex-shrink-0 mt-2">
-                    <div class="flex items-center gap-5">
-                        <div class="flex items-center space-x-2"><span class="opacity-80 font-medium">Giải thưởng:</span><select id="display-select-prize" onchange="onDisplayPrizeChange()" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-bold text-amber-400 shadow-inner"></select></div>
-                        <div class="flex items-center space-x-2"><span class="opacity-80 font-medium">SL/Lượt:</span><input type="number" id="display-input-per-draw" min="1" max="50" onchange="onDisplayPerDrawChange()" class="w-16 bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-indigo-300 text-center shadow-inner"></div>
-                    </div>
-                    <div class="flex items-center gap-5">
-                        <div class="font-mono text-slate-300">Đã trúng: <span id="disp-won-q" class="text-emerald-400 font-bold text-sm">0 / 1</span></div>
-                        <button onclick="toggleFullScreen()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-semibold text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-md">⛶ Fullscreen</button>
-                    </div>
+    <!-- VÙNG ĐUA FULL MÀN HÌNH -->
+    <div id="racingMode" class="hidden flex-col h-full bg-black/90 relative overflow-hidden">
+        <div class="hover-trigger-area" onmouseenter="showToolbar()"></div>
+        
+        <div id="racingToolbar" class="racing-toolbar p-4" onmouseleave="hideToolbar()">
+            <div class="flex justify-between items-center px-6 max-w-4xl mx-auto bento-panel rounded-2xl py-3">
+                <div class="w-[120px]"></div>
+                <div class="text-[11px] text-center text-white/50 font-medium tracking-wider uppercase">
+                    Rê chuột lên đỉnh để hiển thị menu
                 </div>
-
+                <button onclick="goToSetup()" class="w-[120px] justify-end py-1.5 px-3 bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/40 text-rose-200 rounded-xl transition-all text-xs font-bold flex items-center gap-1.5 backdrop-blur-md">
+                    <span>🛑</span> Dừng & Huỷ
+                </button>
             </div>
         </div>
 
-    </main>
+        <div class="flex-1 overflow-y-auto relative w-full h-full" id="trackContainer"></div>
+    </div>
 
-    <!-- Footer -->
-    <footer class="max-w-7xl w-full mx-auto py-4 text-center text-xs opacity-70 border-t border-slate-800/50 mt-auto relative z-10">
-        <span id="footer-event-name">© 2026 TECH SUMMIT 2026 - LUCKY DRAW PLATFORM</span>
-    </footer>
+    <!-- MODAL CHIẾN THẮNG -->
+    <div id="winnerModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-2xl items-center justify-center z-50 p-4">
+        <div class="bento-panel p-8 md:p-12 rounded-[2.5rem] border border-white/20 shadow-2xl text-center max-w-xl w-full flex flex-col max-h-[90vh]">
+            <div class="text-5xl mb-3 animate-bounce filter drop-shadow-[0_0_20px_rgba(244,63,94,0.6)]">🏆</div>
+            <h2 class="text-xs uppercase tracking-widest text-muted font-bold mb-1">Kết Quả Vòng <span id="winRoundText">1</span></h2>
+            <div id="winnersList" class="flex-1 overflow-y-auto flex flex-col gap-2.5 my-6 px-1"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-auto pt-4 border-t border-white/10">
+                <button onclick="nextRound()" id="nextRoundBtn" class="py-3.5 theme-btn rounded-xl font-bold text-xs uppercase tracking-wider transition-all">
+                    Tiếp Tục (Loại Top Thắng)
+                </button>
+                <button onclick="rematch()" class="py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors text-white/80">
+                    Đua Lại Vòng Này
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Script Xử Lý Logic (Hoàn Hảo 100%) -->
     <script>
-        let prizes = [{ id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 }];
-        let participants = []; let drawnParticipants = new Set(); let allWinnersHistory = [];
-        let currentActivePrizeId = 1; let sourceMode = 'google'; let isRunning = false; let audioCtx = null;
-        let tempCurrentRoundWinners = []; let forcedSecretWinner = ""; let isSourceConfirmed = false; let globalLogoBase64 = "";
-
-        function autoScaleFont(element, maxFontSizeStr) {
-            if (!element) return;
-            element.style.fontSize = maxFontSizeStr;
-            let parentWidth = element.parentElement.clientWidth - 40; 
-            let childWidth = element.scrollWidth;
-
-            if (childWidth > parentWidth && childWidth > 0) {
-                let currentSizePx = parseFloat(window.getComputedStyle(element).fontSize);
-                let newSizePx = currentSizePx * (parentWidth / childWidth) * 0.95;
-                element.style.setProperty('font-size', `${newSizePx}px`, 'important');
+        function toggleVipPanel() {
+            const panel = document.getElementById('vipPanel');
+            const grid = document.getElementById('settingsGrid');
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden'); panel.classList.add('flex');
+                grid.classList.remove('lg:grid-cols-1'); grid.classList.add('lg:grid-cols-2');
             } else {
-                element.style.fontSize = maxFontSizeStr;
+                panel.classList.remove('flex'); panel.classList.add('hidden');
+                grid.classList.remove('lg:grid-cols-2'); grid.classList.add('lg:grid-cols-1');
             }
         }
 
-        window.onload = function() {
-            let cachedLogo = localStorage.getItem('lucky_draw_logo');
-            if (cachedLogo) {
-                globalLogoBase64 = cachedLogo;
-                let logoImg = document.getElementById('brand-logo-img');
-                let logoDot = document.getElementById('brand-logo-dot');
-                logoImg.src = globalLogoBase64; logoImg.classList.remove('hidden'); logoDot.classList.add('hidden');
-                logoImg.onload = function() { setSquareFavicon(logoImg); }
-            }
-            let cachedBg = localStorage.getItem('lucky_draw_bg_config');
-            if (cachedBg) {
-                try {
-                    let bgConfig = JSON.parse(cachedBg);
-                    document.getElementById('bg-type').value = bgConfig.bgType || 'solid';
-                    if(bgConfig.solidColor) document.getElementById('custom-bg-solid').value = bgConfig.solidColor;
-                    if(bgConfig.grad1) document.getElementById('grad-1').value = bgConfig.grad1;
-                    if(bgConfig.grad2) document.getElementById('grad-2').value = bgConfig.grad2;
-                    if(bgConfig.imageBgData) { document.getElementById('app-body').style.backgroundImage = `url('${bgConfig.imageBgData}')`; }
-                    toggleBgInputs();
-                } catch(e) {}
-            }
-            let cachedData = localStorage.getItem('lucky_draw_cache');
-            if (cachedData) { try { let parsed = JSON.parse(cachedData); applySettingsToUI(parsed); } catch(e) {} }
-            loadParticipantsFromGoogleSheet();
+        function updateEventName(val) {
+            const newName = val.trim() || "CH TRADING";
+            document.title = newName; document.getElementById('mainTitleDisplay').innerText = newName; 
+        }
+
+        function changeTheme(themeType) {
+            const root = document.documentElement;
+            root.style.setProperty('--text-main', '#f8fafc'); document.getElementById('textColorPicker').value = '#f8fafc';
+            root.style.setProperty('--input-bg', 'rgba(0,0,0,0.5)');
             
-            let rb = document.getElementById('display-roller-box');
-            autoScaleFont(rb, '6rem');
+            if (themeType === 'gala') {
+                root.style.setProperty('--bg-layer', 'radial-gradient(circle at 50% 0%, #1e2530 0%, #0b0e14 60%, #030406 100%)');
+                root.style.setProperty('--primary-color', '#38bdf8'); 
+                root.style.setProperty('--secondary-color', '#f43f5e');
+                root.style.setProperty('--panel-bg', 'rgba(18, 22, 29, 0.85)');
+                root.style.setProperty('--border-color', 'rgba(56, 189, 248, 0.2)');
+            } else if (themeType === 'cyber') {
+                root.style.setProperty('--bg-layer', 'radial-gradient(circle at 50% 0%, #0f172a 0%, #020617 70%, #000000 100%)');
+                root.style.setProperty('--primary-color', '#00f2fe'); 
+                root.style.setProperty('--secondary-color', '#ff0844');
+                root.style.setProperty('--panel-bg', 'rgba(15, 23, 42, 0.9)');
+                root.style.setProperty('--border-color', 'rgba(0, 242, 254, 0.4)');
+            } else if (themeType === 'royal') {
+                root.style.setProperty('--bg-layer', 'radial-gradient(circle at 50% 0%, #450a0a 0%, #1c0202 70%, #050000 100%)');
+                root.style.setProperty('--primary-color', '#ffd700'); 
+                root.style.setProperty('--secondary-color', '#ff6b00');
+                root.style.setProperty('--panel-bg', 'rgba(40, 10, 10, 0.9)');
+                root.style.setProperty('--border-color', 'rgba(255, 215, 0, 0.4)');
+            }
+        }
+
+        function uploadBackground(event) {
+            const file = event.target.files[0]; if (!file) return;
+            document.getElementById('uploadBtnText').innerText = "⏳ Đang phân tích màu...";
+            const imageUrl = URL.createObjectURL(file);
+            const root = document.documentElement;
+            root.style.setProperty('--bg-layer', `url('${imageUrl}')`);
+
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
+                try {
+                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    for (let i = 0; i < data.length; i += 400) { r += data[i]; g += data[i+1]; b += data[i+2]; count++; }
+                    r = Math.floor(r / count); g = Math.floor(g / count); b = Math.floor(b / count);
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+                    let rp = r/255, gp = g/255, bp = b/255; let max = Math.max(rp, gp, bp), min = Math.min(rp, gp, bp);
+                    let h = 0, s = 0, l = (max + min) / 2;
+                    if (max !== min) {
+                        let d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) { case rp: h = (gp - bp) / d + (gp < bp ? 6 : 0); break; case gp: h = (bp - rp) / d + 2; break; case bp: h = (rp - gp) / d + 4; break; }
+                        h *= 60;
+                    }
+
+                    if (luminance > 140) {
+                        root.style.setProperty('--text-main', '#0f172a'); document.getElementById('textColorPicker').value = '#0f172a';
+                        root.style.setProperty('--panel-bg', 'rgba(255, 255, 255, 0.9)'); root.style.setProperty('--input-bg', 'rgba(0, 0, 0, 0.05)');
+                        root.style.setProperty('--primary-color', `hsl(${h}, 80%, 35%)`); root.style.setProperty('--secondary-color', `hsl(${(h + 40) % 360}, 80%, 45%)`);
+                    } else {
+                        root.style.setProperty('--text-main', '#f8fafc'); document.getElementById('textColorPicker').value = '#f8fafc';
+                        root.style.setProperty('--panel-bg', 'rgba(15, 23, 42, 0.9)'); root.style.setProperty('--input-bg', 'rgba(0, 0, 0, 0.4)');
+                        root.style.setProperty('--primary-color', `hsl(${h}, 80%, 65%)`); root.style.setProperty('--secondary-color', `hsl(${(h + 40) % 360}, 80%, 65%)`);
+                    }
+                } catch (e) {}
+                document.getElementById('uploadBtnText').innerText = "📁 Đã tải ảnh nền thành công";
+            };
+            img.src = imageUrl; event.target.value = '';
+        }
+
+        function updateTextColor(event) { document.documentElement.style.setProperty('--text-main', event.target.value); }
+
+        const boatSvg = `<svg xmlns="http://www.w3.org" viewBox="0 0 100 100" width="100%" height="100%" style="filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.5))"><path d="M15 65 Q 50 85, 85 65 L 75 50 C 75 50, 50 45, 25 50 Z" fill="#1e293b"/><path d="M18 62 Q 50 78, 82 62 L 72 48 C 72 48, 50 43, 28 48 Z" fill="#3b82f6"/><path d="M50 45 L 50 15 C 50 15, 70 25, 75 40 Z" fill="#f8fafc"/><path d="M47 45 L 47 18 C 47 18, 30 28, 25 40 Z" fill="#cbd5e1"/></svg>`;
+        const duckSvg = `<svg xmlns="http://www.w3.org" viewBox="0 0 100 100" width="100%" height="100%" style="filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.4))"><path d="M25 55 C 25 70, 65 75, 75 55 C 80 45, 65 40, 50 42 C 40 43, 25 45, 25 55 Z" fill="#facc15" /><path d="M25 55 C 20 50, 15 52, 18 58 C 22 62, 25 55, 25 55 Z" fill="#eab308" /><circle cx="65" cy="35" r="14" fill="#facc15" /><circle cx="70" cy="32" r="2" fill="#1e293b" /><path d="M77 32 C 83 32, 85 37, 77 40 C 74 41, 75 35, 77 32 Z" fill="#f97316" /><path d="M42 52 C 38 52, 35 57, 40 62 C 48 68, 55 58, 52 53 C 48 48, 45 52, 42 52 Z" fill="#eab308" /></svg>`;
+
+        const racerConfigs = {
+            horse: { emoji: '🐎', isSvg: false, bgClass: 'track-bg-horse', laneClass: 'track-lane-horse', effectClass: 'effect-dust', iconClass: 'racer-icon-flip' },
+            car: { emoji: '🏎️', isSvg: false, bgClass: 'track-bg-car', laneClass: 'track-lane-car', effectClass: 'effect-smoke', iconClass: 'racer-icon-flip' },
+            duck: { emoji: duckSvg, isSvg: true, bgClass: 'track-bg-duck', laneClass: 'track-lane-duck', effectClass: 'effect-water', iconClass: 'racer-icon' },
+            bird: { emoji: '🦅', isSvg: false, bgClass: 'track-bg-bird', laneClass: 'track-lane-bird', effectClass: 'effect-cloud', iconClass: 'racer-icon-bird' },
+            boat: { emoji: boatSvg, isSvg: true, bgClass: 'track-bg-boat', laneClass: 'track-lane-boat', effectClass: 'effect-wake', iconClass: 'racer-icon' }
         };
 
-        window.addEventListener('resize', () => {
-            let rb = document.getElementById('display-roller-box');
-            if(rb && (rb.innerText === "SẴN SÀNG" || isRunning)) { autoScaleFont(rb, '6rem'); }
-            
-            // Re-scale các thẻ tên nếu đang resize màn hình lúc có kết quả
-            let winnersContainer = document.getElementById('display-winners-container');
-            if(winnersContainer.children.length > 0) {
-                let cards = winnersContainer.querySelectorAll('.winner-card');
-                cards.forEach(card => card.style.fontSize = '4.5rem'); // reset
-                let minSize = Infinity;
-                cards.forEach(card => {
-                    let span = card.querySelector('span');
-                    let style = window.getComputedStyle(card);
-                    let paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-                    let availableW = card.clientWidth - paddingX;
-                    let textW = span.scrollWidth;
-                    let currentSize = parseFloat(style.fontSize);
-                    if (textW > availableW && textW > 0) {
-                        let neededSize = currentSize * (availableW / textW) * 0.95;
-                        if (neededSize < minSize) minSize = neededSize;
-                    } else {
-                        if (currentSize < minSize) minSize = currentSize;
-                    }
-                });
-                if (minSize !== Infinity) { cards.forEach(card => { card.style.setProperty('font-size', `${minSize}px`, 'important'); }); }
-            }
-        });
+        let horses = []; let raceHistory = []; let raceInterval = null; let currentWinners = []; 
+        let idCounter = 0; let roundNumber = 1; let isTurboActivated = false;
 
-        function setSquareFavicon(imgElement) {
-            try {
-                let canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64; let ctx = canvas.getContext('2d');
-                let h = imgElement.naturalHeight || imgElement.height; let w = imgElement.naturalWidth || imgElement.width;
-                if (!w || !h) return;
-                let maxDim = Math.max(w, h); let dw = (maxDim - w) / 2; let dh = (maxDim - h) / 2;
-                ctx.clearRect(0, 0, 64, 64); ctx.drawImage(imgElement, dw, dh, w, h);
-                let favicon = document.getElementById('browser-favicon'); if (favicon) favicon.href = canvas.toDataURL('image/png');
-            } catch(e) {}
-        }
+        const setupMode = document.getElementById('setupMode'); const racingMode = document.getElementById('racingMode');
+        const horseInputs = document.getElementById('horseInputs'); const trackContainer = document.getElementById('trackContainer'); 
+        const winnerModal = document.getElementById('winnerModal'); const racingToolbar = document.getElementById('racingToolbar'); 
+        const bgMusic = document.getElementById('bgMusic'); const winAudio = document.getElementById('winAudio'); 
+        const targetWinnerSelect = document.getElementById('targetWinner'); const historyList = document.getElementById('historyList');
 
-        function toggleSourceMode() {
-            sourceMode = document.getElementById('input-source-mode').value; isSourceConfirmed = false;
-            document.getElementById('confirmed-source-status').innerText = "Nguồn dữ liệu đã thay đổi, vui lòng bấm chốt lại!";
-            document.getElementById('confirmed-source-status').className = "text-xs text-rose-400 mt-2 text-center font-semibold";
-            document.getElementById('source-google-box').style.display = sourceMode === 'google' ? 'block' : 'none';
-            document.getElementById('source-number-box').style.display = sourceMode === 'number' ? 'grid' : 'none';
-            document.getElementById('source-file-box').style.display = sourceMode === 'file' ? 'block' : 'none';
-        }
+        function showToolbar() { racingToolbar.classList.add('show-toolbar'); }
+        function hideToolbar() { racingToolbar.classList.remove('show-toolbar'); }
 
-        async function confirmDataSource() {
-            if (sourceMode === 'google') {
-                let url = document.getElementById('input-gsheet-url').value.trim();
-                if(!url) { alert("Vui lòng nhập URL Google Sheets!"); return; }
-                document.getElementById('confirmed-source-status').innerText = "⏳ Đang kết nối và lấy dữ liệu...";
-                document.getElementById('confirmed-source-status').className = "text-xs text-amber-400 mt-2 text-center";
-                let success = await loadParticipantsFromGoogleSheet();
-                if(!success || participants.length === 0) { alert("⚠️ Không tải được dữ liệu từ Google Sheets!"); return; }
-            }
-            isSourceConfirmed = true;
-            document.getElementById('confirmed-source-status').innerHTML = `<span class="material-symbols-outlined text-[14px]">verified</span> Đã chốt nguồn dữ liệu thành công!`;
-            document.getElementById('confirmed-source-status').className = "text-xs text-emerald-400 mt-2 text-center flex items-center justify-center gap-1 font-bold";
-        }
-
-        async function loadParticipantsFromGoogleSheet() {
-            let url = document.getElementById('input-gsheet-url').value.trim(); if(!url) return false;
-            try {
-                let res = await fetch(url); let data = await res.json();
-                localStorage.setItem('lucky_draw_cache', JSON.stringify(data));
-                if(data.participants && data.participants.length > 0) {
-                    participants = data.participants.map(p => {
-                        let mainParts = [];
-                        if (p.maNV && String(p.maNV).trim() !== "") mainParts.push(String(p.maNV).trim());
-                        if (p.hoTen && String(p.hoTen).trim() !== "") mainParts.push(String(p.hoTen).trim());
-                        let textName = mainParts.join(" - ");
-                        return p.boPhan ? (textName ? `${textName} (${String(p.boPhan).trim()})` : String(p.boPhan).trim()) : textName;
-                    }).filter(item => item !== "");
-                    document.getElementById('sheet-status-info').innerHTML = `<span class="material-symbols-outlined text-[14px]">check_circle</span> Đã tải ${participants.length} nhân viên.`;
-                }
-                if(data.prizes && data.prizes.length > 0) prizes = data.prizes;
-                if(data.settings) applySettingsToUI(data);
-                renderPrizesTable(); updatePrizeDropdown(); syncDisplayScreenInfo();
-                return true;
-            } catch(err) { return false; }
-        }
-
-        function applySettingsToUI(data) {
-            let s = data.settings; if(!s) return;
-            if(s.eventName) { document.getElementById('input-event-name').value = s.eventName; document.getElementById('footer-event-name').innerText = `© 2026 ${s.eventName} - LUCKY DRAW`; }
-            if(s.bgType) document.getElementById('bg-type').value = s.bgType;
-            if(s.solidColor) document.getElementById('custom-bg-solid').value = s.solidColor;
-            if(s.grad1) document.getElementById('grad-1').value = s.grad1;
-            if(s.grad2) document.getElementById('grad-2').value = s.grad2;
-            if(s.fontFamily) document.getElementById('custom-font-family').value = s.fontFamily;
-            if(s.textColor) document.getElementById('custom-text-color').value = s.textColor;
-            if(s.titleColor) document.getElementById('custom-title-color').value = s.titleColor;
-            if(s.autoContrast !== undefined) document.getElementById('auto-text-contrast').checked = s.autoContrast;
-            if(s.btnColor) document.getElementById('custom-brand-btn-color').value = s.btnColor;
-            if(s.spinDuration) document.getElementById('input-spin-duration').value = s.spinDuration;
-            if(s.logoBase64) {
-                globalLogoBase64 = s.logoBase64; localStorage.setItem('lucky_draw_logo', globalLogoBase64);
-                let logoImg = document.getElementById('brand-logo-img'); let logoDot = document.getElementById('brand-logo-dot');
-                logoImg.src = globalLogoBase64; logoImg.classList.remove('hidden'); logoDot.classList.add('hidden'); logoImg.onload = function() { setSquareFavicon(logoImg); }
-            }
-            toggleBgInputs(); applyBrandGuidelinesLocally();
-        }
-
-        async function savePrizesConfigToGoogleSheet() {
-            let url = document.getElementById('input-gsheet-url').value.trim(); if(!url) return;
-            let currentSettings = {
-                eventName: document.getElementById('input-event-name').value,
-                bgType: document.getElementById('bg-type').value, solidColor: document.getElementById('custom-bg-solid').value,
-                grad1: document.getElementById('grad-1').value, grad2: document.getElementById('grad-2').value,
-                fontFamily: document.getElementById('custom-font-family').value, textColor: document.getElementById('custom-text-color').value,
-                titleColor: document.getElementById('custom-title-color').value, autoContrast: document.getElementById('auto-text-contrast').checked,
-                btnColor: document.getElementById('custom-brand-btn-color').value, spinDuration: document.getElementById('input-spin-duration').value, logoBase64: globalLogoBase64
+        function importCSV(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r\n|\n/).map(line => line.trim()).filter(line => line.length > 0);
+                let parsedNames = lines.map(line => line.split(',')[0].replace(/^"|"$/g, '').trim()).filter(name => name.length > 0);
+                const firstLower = parsedNames[0].toLowerCase();
+                if (firstLower === 'tên' || firstLower === 'name' || firstLower.includes('ngựa') || firstLower.includes('choi')) parsedNames.shift();
+                if (parsedNames.length === 0) { alert("File trống!"); return; }
+                if (parsedNames.length > 150) { alert(`Chỉ lấy 150 người đầu tiên.`); parsedNames = parsedNames.slice(0, 150); }
+                document.getElementById('numHorses').value = parsedNames.length;
+                horses = []; idCounter = 0;
+                parsedNames.forEach(name => { idCounter++; horses.push({ id: idCounter, name: name, progress: 0 }); });
+                renderInputs(); event.target.value = '';
             };
-            try { await fetch(url, { method: "POST", body: JSON.stringify({ action: "saveSettings", prizes: prizes, customSettings: currentSettings }) }); } catch(e) {}
+            reader.readAsText(file);
         }
 
-        async function pushWinnerToGoogleSheet(prizeName, winnerInfo) {
-            let url = document.getElementById('input-gsheet-url').value.trim(); if(!url) return;
-            try { await fetch(url, { method: "POST", body: JSON.stringify({ time: new Date().toLocaleTimeString(), prizeName: prizeName, winnerInfo: winnerInfo }) }); } catch(e) {}
+        function handleGenerateBtn() {
+            const num = Math.min(Math.max(parseInt(document.getElementById('numHorses').value), 2), 150);
+            document.getElementById('numHorses').value = num;
+            horses = []; idCounter = 0;
+            for(let i = 0; i < num; i++) { idCounter++; horses.push({ id: idCounter, name: `VĐV ${idCounter}`, progress: 0 }); }
+            renderInputs();
         }
 
-        function openSecretWinnerModal() {
-            let currentVal = forcedSecretWinner ? `Đang chỉ định: ${forcedSecretWinner}` : "Không có";
-            let input = prompt(`[CHẾ ĐỘ BÍ MẬT - RIGGED DRAW]\nNhập chính xác tên/mã muốn ép thắng (Để trống để xoá):\n(Hiện tại: ${currentVal})`, forcedSecretWinner);
-            if (input !== null) { forcedSecretWinner = input.trim(); alert(forcedSecretWinner ? `Đã chỉ định: ${forcedSecretWinner}` : "Đã xóa chỉ định!"); }
+        function renderInputs() {
+            document.getElementById('horseCountDisplay').innerText = horses.length;
+            const currentTarget = targetWinnerSelect.value;
+            targetWinnerSelect.innerHTML = '<option value="random">🎲 Ngẫu nhiên (Công bằng 100%)</option>';
+            if (horses.length <= 1) {
+                document.getElementById('game-over-container').classList.replace('hidden', 'flex');
+                document.getElementById('setup-controls').classList.add('hidden'); return;
+            }
+            document.getElementById('game-over-container').classList.replace('flex', 'hidden'); document.getElementById('setup-controls').classList.remove('hidden');
+
+            horseInputs.innerHTML = '';
+            horses.forEach((h, index) => {
+                const input = document.createElement('input'); input.type = 'text'; input.value = h.name;
+                input.className = 'custom-input p-2.5 text-xs text-center w-full font-semibold';
+                input.oninput = (e) => { horses[index].name = e.target.value; updateTargetSelectNames(); };
+                horseInputs.appendChild(input);
+
+                const option = document.createElement('option'); option.value = h.id; option.text = `Chỉ định: ${h.name}`;
+                targetWinnerSelect.appendChild(option);
+            });
+            if (horses.find(h => h.id == currentTarget)) targetWinnerSelect.value = currentTarget;
         }
 
-        function playSound(type = 'tick', stepRatio = 0.5) {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-                if (type === 'tick') {
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(250 + Math.pow(stepRatio, 2) * 900, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.04);
-                } else if (type === 'win') {
-                    [440, 554.37, 659.25, 880, 1108.73].forEach((f, i) => {
-                        let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.type = 'square'; o.connect(g); g.connect(audioCtx.destination);
-                        o.frequency.value = f; g.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.08)); o.start(audioCtx.currentTime + (i * 0.08)); o.stop(audioCtx.currentTime + 0.5);
-                    });
-                }
-            } catch(e) {}
+        function updateTargetSelectNames() {
+            Array.from(targetWinnerSelect.options).forEach(opt => {
+                if(opt.value !== 'random') { const h = horses.find(h => h.id == opt.value); if(h) opt.text = `Chỉ định: ${h.name}`; }
+            });
         }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('btn-tab-control').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800";
-            document.getElementById('btn-tab-display').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white hover:bg-slate-800";
+        function resetFullGame() { document.getElementById('numHorses').value = 5; roundNumber = 1; document.getElementById('roundCounterBadge').innerText = `Vòng ${roundNumber}`; handleGenerateBtn(); }
+
+        function formatExactTime(dateObj) {
+            const h = dateObj.getHours().toString().padStart(2, '0'); const m = dateObj.getMinutes().toString().padStart(2, '0');
+            const s = dateObj.getSeconds().toString().padStart(2, '0'); const ms = dateObj.getMilliseconds().toString().padStart(3, '0');
+            return `${h}:${m}:${s}.${ms}`;
+        }
+
+        function startRace() {
+            isTurboActivated = false;
+            bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log("Cần tương tác"));
+            if(winAudio) { winAudio.volume = 0; winAudio.play().then(() => { winAudio.pause(); winAudio.volume = 1; winAudio.currentTime = 0; }).catch(e=>{}); }
+
+            const mode = document.getElementById('raceModeSelect').value;
+            if (mode === 'lanes') startLanesRace();
+            else startRandomRace();
+        }
+
+        // ====================== 1. ĐUA THEO LÀN ======================
+        function startLanesRace() {
+            setupMode.classList.add('hidden'); racingMode.classList.replace('hidden', 'flex');
+            const selectedRacer = document.getElementById('racerType').value; const config = racerConfigs[selectedRacer];
             
-            if (tabName === 'control') {
-                document.getElementById('tab-control').classList.add('active');
-                document.getElementById('btn-tab-control').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
-                updateAdminStats();
-            } else {
-                document.getElementById('tab-display').classList.add('active');
-                document.getElementById('btn-tab-display').className = "px-5 py-2.5 rounded-xl text-xs font-bold transition brand-btn shadow-lg";
-                syncDisplayScreenInfo();
+            trackContainer.className = `flex-1 overflow-y-auto relative w-full h-full shadow-2xl ${config.bgClass}`;
+            trackContainer.innerHTML = `
+                <div class="finish-line absolute top-0 bottom-0 right-[3%] w-2.5 z-0 opacity-90"></div>
+                <div id="lanesContainer" class="flex flex-col relative z-10 w-full min-h-full pb-2"></div>
+            `;
+            const lanesContainer = document.getElementById('lanesContainer');
+            const totalCount = Math.max(horses.length, 1);
+            let laneHeight = Math.max(22, Math.floor((window.innerHeight - 60) / totalCount));
+            laneHeight = Math.min(laneHeight, 55); 
+            
+            let racerSize = Math.max(16, Math.floor(laneHeight * 0.75));
+            let fontSize = Math.max(0.55, Math.min(0.85, (laneHeight * 0.35) / 16));
+            
+            horses.forEach(h => {
+                h.progress = 0; const lane = document.createElement('div');
+                lane.className = `relative w-full flex items-center overflow-hidden z-10 ${config.laneClass}`; 
+                lane.style.height = `${laneHeight}px`;
                 
-                setTimeout(() => {
-                    let rb = document.getElementById('display-roller-box');
-                    if (rb && (rb.innerText === 'SẴN SÀNG' || rb.innerText === '')) autoScaleFont(rb, '6rem');
-                }, 50);
-            }
-        }
+                const racerContent = config.isSvg 
+                    ? `<div class="${config.iconClass}" style="width: ${racerSize}px; height: ${racerSize}px; display:inline-block;">${config.emoji}</div>`
+                    : `<div class="${config.iconClass}" style="font-size: ${Math.max(12, racerSize)}px;">${config.emoji}</div>`;
 
-        function goToDisplayAndReady() {
-            if (!isSourceConfirmed) { alert("⚠️ Vui lòng bấm 'Chốt Nguồn Dữ Liệu' ở Tab Điều Khiển trước khi mở màn hình!"); return; }
-            if (sourceMode === 'google' && participants.length === 0) { alert("⚠️ Danh sách trống!"); return; }
-            switchTab('display');
-        }
-
-        function toggleBgInputs() {
-            let type = document.getElementById('bg-type').value;
-            document.getElementById('bg-solid-box').style.display = type === 'solid' ? 'block' : 'none';
-            document.getElementById('bg-gradient-box').style.display = type === 'gradient' ? 'grid' : 'none';
-            document.getElementById('bg-image-box').style.display = type === 'image' ? 'block' : 'none';
-        }
-
-        function getContrastTextColor(hexColor) {
-            hexColor = hexColor.replace('#', ''); if (hexColor.length === 3) hexColor = hexColor.split('').map(c => c + c).join('');
-            let r = parseInt(hexColor.substr(0, 2), 16), g = parseInt(hexColor.substr(2, 2), 16), b = parseInt(hexColor.substr(4, 2), 16);
-            return ((r * 299 + g * 587 + b * 114) / 1000) >= 128 ? '#0f172a' : '#ffffff';
-        }
-
-        function applyBrandGuidelinesLocally() {
-            let bgType = document.getElementById('bg-type').value; let fontFamily = document.getElementById('custom-font-family').value;
-            let eventName = document.getElementById('input-event-name').value; let brandBtnColor = document.getElementById('custom-brand-btn-color').value;
-            let customTextColor = document.getElementById('custom-text-color').value; let customTitleColor = document.getElementById('custom-title-color').value;
-            let isAutoContrast = document.getElementById('auto-text-contrast').checked; let body = document.getElementById('app-body'); body.style.fontFamily = fontFamily;
-            let finalTextColor = customTextColor; let finalTitleColor = customTitleColor; let bgConfigToSave = { bgType: bgType };
-
-            if (bgType === 'solid') {
-                let solidColor = document.getElementById('custom-bg-solid').value; body.style.backgroundImage = 'none'; body.style.backgroundColor = solidColor; bgConfigToSave.solidColor = solidColor;
-                if (isAutoContrast) { finalTextColor = getContrastTextColor(solidColor); finalTitleColor = finalTextColor; }
-            } else if (bgType === 'gradient') {
-                let c1 = document.getElementById('grad-1').value; let c2 = document.getElementById('grad-2').value; body.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`; bgConfigToSave.grad1 = c1; bgConfigToSave.grad2 = c2;
-                if (isAutoContrast) { finalTextColor = getContrastTextColor(c1); finalTitleColor = finalTextColor; }
-            } else if (bgType === 'image') {
-                let fileInput = document.getElementById('custom-bg-file');
-                if (fileInput.files && fileInput.files[0]) {
-                    let reader = new FileReader(); reader.onload = function(e) { let base64Img = e.target.result; body.style.backgroundImage = `url('${base64Img}')`; bgConfigToSave.imageBgData = base64Img; localStorage.setItem('lucky_draw_bg_config', JSON.stringify(bgConfigToSave)); }
-                    reader.readAsDataURL(fileInput.files[0]);
-                } else {
-                    let cachedBg = localStorage.getItem('lucky_draw_bg_config');
-                    if(cachedBg) { try { let parsedBg = JSON.parse(cachedBg); if(parsedBg.imageBgData) { body.style.backgroundImage = `url('${parsedBg.imageBgData}')`; bgConfigToSave.imageBgData = parsedBg.imageBgData; } } catch(e) {} }
-                }
-                if (isAutoContrast) { finalTextColor = '#f8fafc'; finalTitleColor = '#f8fafc'; }
-            }
-
-            localStorage.setItem('lucky_draw_bg_config', JSON.stringify(bgConfigToSave));
-            body.style.color = finalTextColor; document.documentElement.style.setProperty('--title-text-color', finalTitleColor);
-            document.documentElement.style.setProperty('--brand-btn-bg', brandBtnColor); document.documentElement.style.setProperty('--brand-btn-text', getContrastTextColor(brandBtnColor));
-            document.getElementById('browser-tab-title').innerText = eventName + " - Lucky Draw"; syncDisplayScreenInfo();
-        }
-
-        function applyBrandGuidelines() {
-            let logoFile = document.getElementById('custom-logo-file');
-            if (logoFile.files && logoFile.files[0]) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    globalLogoBase64 = e.target.result; localStorage.setItem('lucky_draw_logo', globalLogoBase64);
-                    let logoImg = document.getElementById('brand-logo-img'); let logoDot = document.getElementById('brand-logo-dot');
-                    logoImg.src = globalLogoBase64; logoImg.classList.remove('hidden'); logoDot.classList.add('hidden'); logoImg.onload = function() { setSquareFavicon(logoImg); }
-                    applyBrandGuidelinesLocally(); savePrizesConfigToGoogleSheet();
-                }
-                reader.readAsDataURL(logoFile.files[0]);
-            } else { applyBrandGuidelinesLocally(); savePrizesConfigToGoogleSheet(); }
-        }
-
-        function renderPrizesTable() {
-            let tbody = document.getElementById('prizes-table-body'); tbody.innerHTML = "";
-            prizes.forEach((p, idx) => {
-                let tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/30 transition-colors";
-                tr.innerHTML = `<td class="py-2.5 pr-2"><input type="text" value="${p.name}" onchange="prizes[${idx}].name = this.value; updatePrizeDropdown();" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
-                <td class="py-2.5 px-2"><input type="number" min="1" value="${p.total}" onchange="prizes[${idx}].total = parseInt(this.value)||1; updateAdminStats();" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-2 text-xs text-center focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
-                <td class="py-2.5 px-2"><input type="number" min="1" value="${p.perDraw}" onchange="prizes[${idx}].perDraw = parseInt(this.value)||1;" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-2 text-xs text-center focus:ring-1 focus:ring-indigo-500/50 outline-none"></td>
-                <td class="py-2.5 pl-2 text-center"><button onclick="removePrize(${idx})" class="w-8 h-8 rounded-full bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition flex items-center justify-center mx-auto"><span class="material-symbols-outlined text-[16px]">delete</span></button></td>`;
-                tbody.appendChild(tr);
+                lane.innerHTML = `
+                    <div class="absolute left-4 font-bold opacity-90 w-[110px] md:w-[150px] truncate z-20 text-white drop-shadow-md tracking-wide" style="font-size: ${fontSize}rem;">${h.name}</div>
+                    <div id="horse-ui-${h.id}" class="racer-wrapper" style="left: calc(130px + 0%);">
+                        <div class="${config.effectClass}"></div>
+                        <div class="speed-trail trail-1"></div><div class="speed-trail trail-2"></div><div class="speed-trail trail-3"></div>
+                        ${racerContent}
+                    </div>
+                `;
+                lanesContainer.appendChild(lane);
             });
-            updatePrizeDropdown();
-        }
-        function addPrizeRow() { prizes.push({ id: Date.now(), name: "Giải Mới", total: 1, perDraw: 1, wonCount: 0 }); renderPrizesTable(); }
-        function removePrize(idx) { if (prizes.length <= 1) { alert('Phải giữ lại 1 giải!'); return; } prizes.splice(idx, 1); renderPrizesTable(); }
-        function savePrizesConfig() { updatePrizeDropdown(); savePrizesConfigToGoogleSheet(); }
-        
-        function updatePrizeDropdown() {
-            let selectAdmin = document.getElementById('select-active-prize'); let selectDisplay = document.getElementById('display-select-prize');
-            [selectAdmin, selectDisplay].forEach(sel => {
-                if(!sel) return; sel.innerHTML = "";
-                prizes.forEach(p => {
-                    let opt = document.createElement('option'); opt.value = p.id; opt.innerText = `${p.name} (Còn: ${p.total - p.wonCount}/${p.total})`;
-                    if (p.id == currentActivePrizeId) opt.selected = true; sel.appendChild(opt);
-                });
-            });
-            syncDisplayScreenInfo();
-        }
 
-        function onSelectedPrizeChange() { currentActivePrizeId = parseInt(document.getElementById('select-active-prize').value); document.getElementById('display-select-prize').value = currentActivePrizeId; syncDisplayScreenInfo(); }
-        function onDisplayPrizeChange() { currentActivePrizeId = parseInt(document.getElementById('display-select-prize').value); document.getElementById('select-active-prize').value = currentActivePrizeId; syncDisplayScreenInfo(); }
-        function onDisplayPerDrawChange() { let activeP = prizes.find(p => p.id == currentActivePrizeId); if(activeP) { activeP.perDraw = parseInt(document.getElementById('display-input-per-draw').value); updateAdminStats(); } }
+            currentWinners = [];
+            const durationSec = parseFloat(document.getElementById('raceDuration').value) || 10;
+            let targetTopN = parseInt(document.getElementById('topN').value) || 1;
+            targetTopN = Math.max(1, Math.min(targetTopN, 20, horses.length));
+            document.getElementById('topN').value = targetTopN;
+            const targetId = targetWinnerSelect.value; const fps = 25; const maxStep = 100 / (durationSec * fps * 0.85);
 
-        function updateAdminStats() {
-            let activeP = prizes.find(p => p.id == currentActivePrizeId) || prizes[0]; if (!activeP) return;
-            document.getElementById('info-total-prize').innerText = activeP.total;
-            document.getElementById('info-won-prize').innerText = `${activeP.wonCount} / ${activeP.total}`;
-            document.getElementById('info-per-draw').innerText = activeP.perDraw;
-        }
-
-        function syncDisplayScreenInfo() {
-            let eventName = document.getElementById('input-event-name').value;
-            document.getElementById('header-event-title').innerText = eventName; document.getElementById('display-event-badge').innerText = eventName; document.getElementById('footer-event-name').innerText = `© 2026 ${eventName} - LUCKY DRAW PLATFORM`;
-            let activeP = prizes.find(p => p.id == currentActivePrizeId) || prizes[0]; if (!activeP) return;
-            document.getElementById('disp-won-q').innerText = `${activeP.wonCount} / ${activeP.total}`;
-            document.getElementById('disp-active-name').innerText = activeP.name;
-            let dispPerDrawInput = document.getElementById('display-input-per-draw');
-            if(dispPerDrawInput && document.activeElement !== dispPerDrawInput) { dispPerDrawInput.value = activeP.perDraw; }
-            updateAdminStats();
-        }
-
-        function downloadSampleCSV() {
-            let sampleContent = "\uFEFFSTT;Mã nhân viên;Họ và tên;Bộ phận\n1;EMP001;Nguyễn Văn An;Phòng Công Nghệ\n2;EMP002;Trần Thị Bình;Phòng Nhân Sự\n3;EMP003;Lê Hoàng Cường;Phòng Kinh Doanh\n4;EMP004;Phạm Thị Dung;Phòng Marketing\n5;EMP005;Hoàng Văn Em;Phòng Tài Chính";
-            let blob = new Blob([sampleContent], { type: "text/csv;charset=utf-8;" }); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "danh_sach_nhan_vien.csv"; a.click();
-        }
-
-        let fileInputEl = document.getElementById('import-file');
-        if(fileInputEl) {
-            fileInputEl.addEventListener('change', function(e) {
-                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                reader.onload = function(evt) {
-                    let text = evt.target.result; let lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(l => l.length > 0);
-                    if (lines.length > 0 && (lines[0].toLowerCase().includes('stt') || lines[0].toLowerCase().includes('mã'))) lines.shift();
-                    participants = lines.map(line => {
-                        let parts = line.split(/;|,|\t/);
-                        if (parts.length >= 4) return `${parts[1].trim()} - ${parts[2].trim()} (${parts[3].trim()})`;
-                        else if (parts.length >= 3) return `${parts[1].trim()} - ${parts[2].trim()}`;
-                        return line;
-                    });
-                    alert(`Đã upload thành công ${participants.length} nhân viên từ file CSV!`);
-                }; reader.readAsText(file, "UTF-8");
-            });
-        }
-
-        function startSpinningAnimation() {
-            if (isRunning) return;
-            let activeP = prizes.find(p => p.id == currentActivePrizeId); if (!activeP) return;
-            if (activeP.wonCount >= activeP.total) { alert(`Giải "${activeP.name}" đã trao đủ số lượng!`); return; }
-
-            let availablePool = sourceMode === 'number' ? [] : participants.filter(p => !drawnParticipants.has(p));
-            if (sourceMode !== 'number' && availablePool.length === 0) { alert("⚠️ Không còn ai trong danh sách để quay!"); return; }
-
-            document.getElementById('start-draw-container').style.display = 'none'; 
-            document.getElementById('action-buttons-bar').style.display = 'none'; 
-            document.getElementById('display-winners-container').innerHTML = '';
-            
-            isRunning = true; 
-            let rollerBox = document.getElementById('display-roller-box');
-            let countToDraw = Math.min(activeP.perDraw, activeP.total - activeP.wonCount);
-            let durationSec = parseFloat(document.getElementById('input-spin-duration').value) || 3;
-            let durationMs = durationSec * 1000;
-            
-            let startTime = null;
-            let lastTextChange = 0;
-
-            function animateSpin(currentTime) {
-                if (!startTime) startTime = currentTime;
-                let elapsed = currentTime - startTime;
-                let progress = Math.min(elapsed / durationMs, 1);
-
-                if (currentTime - lastTextChange > 60) {
-                    let text = "";
-                    if (sourceMode === 'number') {
-                        let from = parseInt(document.getElementById('num-from').value) || 1; let to = Math.min(99999999, parseInt(document.getElementById('num-to').value) || 99999999);
-                        let randNum = Math.floor(Math.random() * (to - from + 1)) + from;
-                        text = String(randNum).padStart(Math.min(8, String(to).length), '0');
-                    } else {
-                        text = availablePool[Math.floor(Math.random() * availablePool.length)];
+            raceInterval = setInterval(() => {
+                let newlyFinished = []; 
+                horses.forEach(h => {
+                    if (h.progress >= 100) return;
+                    let step = Math.random() * maxStep;
+                    
+                    if (targetId !== "random") {
+                        if (h.id == targetId) {
+                            step = step * 1.3; 
+                            if (h.progress >= 80 && !isTurboActivated) {
+                                isTurboActivated = true;
+                                const vipEl = document.getElementById(`horse-ui-${targetId}`);
+                                if (vipEl) vipEl.classList.add('vip-turbo');
+                            }
+                        } else { 
+                            const vip = horses.find(x => x.id == targetId); 
+                            if (vip && vip.progress < 100 && h.progress + step >= 99) step = 99 - h.progress; 
+                        }
                     }
-                    rollerBox.innerText = text;
-                    autoScaleFont(rollerBox, '6rem');
-                    playSound('tick', progress);
-                    lastTextChange = currentTime;
+                    
+                    h.progress += step;
+                    const el = document.getElementById(`horse-ui-${h.id}`);
+                    if (el) el.style.left = `calc(130px + ${(Math.min(h.progress, 100) * 0.78)}%)`; 
+                    if (h.progress >= 100 && !currentWinners.find(w => w.id === h.id)) newlyFinished.push({...h});
+                });
+
+                if(newlyFinished.length > 0) {
+                    newlyFinished.sort((a, b) => b.progress - a.progress);
+                    let baseNow = Date.now();
+                    newlyFinished.forEach((nf, idx) => { nf.exactTimeDate = new Date(baseNow + (idx * 25)); currentWinners.push(nf); });
                 }
 
-                let yOffset = Math.sin(elapsed / 30) * 8 * (1 - progress); 
-                rollerBox.style.transform = `translateY(${yOffset}px)`;
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateSpin);
-                } else {
-                    rollerBox.style.transform = 'translateY(0)';
-                    finalizeRound(countToDraw, availablePool);
+                if (currentWinners.length >= targetTopN || currentWinners.length === horses.length) {
+                    currentWinners = currentWinners.slice(0, targetTopN);
+                    clearInterval(raceInterval); bgMusic.pause(); 
+                    if(winAudio) { winAudio.currentTime = 0; winAudio.play().catch(e=>console.log(e)); }
+                    saveHistory(currentWinners); showWinners(currentWinners); 
                 }
-            }
-            
-            requestAnimationFrame(animateSpin);
+            }, 1000/fps);
         }
 
-        function finalizeRound(countToDraw, availablePool) {
-            isRunning = false; playSound('win'); tempCurrentRoundWinners = [];
-            if (forcedSecretWinner && countToDraw === 1) { tempCurrentRoundWinners.push(forcedSecretWinner); drawnParticipants.add(forcedSecretWinner); forcedSecretWinner = ""; } else {
-                if (sourceMode === 'number') {
-                    let from = parseInt(document.getElementById('num-from').value) || 1; let to = Math.min(99999999, parseInt(document.getElementById('num-to').value) || 99999999);
-                    let pool = []; for(let i=from; i<=to; i++) pool.push(String(i).padStart(Math.min(8, String(to).length), '0'));
-                    for(let i=0; i<countToDraw; i++) { if(pool.length === 0) break; tempCurrentRoundWinners.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); }
-                } else {
-                    let pool = [...availablePool];
-                    for(let i=0; i<countToDraw; i++) { if(pool.length === 0) break; let winner = pool.splice(Math.floor(Math.random() * pool.length), 1)[0]; tempCurrentRoundWinners.push(winner); drawnParticipants.add(winner); }
-                }
-            }
-
-            let rb = document.getElementById('display-roller-box');
-            rb.style.fontSize = ""; 
-            rb.innerHTML = `<span class="text-xl md:text-3xl font-extrabold tracking-widest uppercase text-emerald-400 mb-4 inline-block">🎉 CHÚC MỪNG NGƯỜI TRÚNG GIẢI 🎉</span>`;
+        // ====================== 2. ĐUA TỰ DO (RANDOM SURVIVAL) ======================
+        function startRandomRace() {
+            setupMode.classList.add('hidden'); racingMode.classList.replace('hidden', 'flex');
             
-            let currentBodyColor = window.getComputedStyle(document.getElementById('app-body')).color;
-            let winnersContainer = document.getElementById('display-winners-container'); winnersContainer.innerHTML = "";
+            const selectedRacer = document.getElementById('racerType').value; const config = racerConfigs[selectedRacer];
+            trackContainer.className = `flex-1 relative w-full h-full overflow-hidden ${config.bgClass}`;
+            
+            trackContainer.innerHTML = `
+                <div class="absolute inset-0 z-0 opacity-30" style="background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 32px 32px;"></div>
+                <div id="dangerBorder" class="absolute inset-0 z-0 pointer-events-none transition-all duration-300"></div>
+                <div id="countdownDisplay" class="absolute inset-0 flex items-center justify-center text-[15rem] md:text-[25rem] font-black text-white/5 pointer-events-none z-0 tracking-tighter transition-colors duration-500"></div>
+                <div id="randomArena" class="absolute inset-0 z-10 transition-all duration-1000"></div>
+            `;
+            const arena = document.getElementById('randomArena');
+            const countdownEl = document.getElementById('countdownDisplay');
 
-            // 1. Tạo HTML cho tất cả thẻ với cấu trúc giúp đo kích thước chuẩn nhất
-            tempCurrentRoundWinners.forEach(w => {
-                let wrapper = document.createElement('div');
-                wrapper.className = "w-full max-w-[95%] md:max-w-[85%] lg:max-w-[75%] flex justify-center items-center";
+            horses.forEach(h => {
+                h.x = Math.random() * 85; h.y = Math.random() * 80; 
+                h.vx = (Math.random() - 0.5) * 1.8; h.vy = (Math.random() - 0.5) * 1.8; 
+
+                const el = document.createElement('div');
+                el.className = 'absolute flex flex-col items-center justify-center z-20 transition-transform duration-100';
+                el.id = `horse-ui-${h.id}`;
+                el.style.left = `${h.x}%`; el.style.top = `${h.y}%`;
                 
-                let card = document.createElement('div');
-                // w-full giúp kích thước khung của tất cả mọi người là bằng nhau (được giới hạn bởi wrapper bên ngoài)
-                card.className = "winner-card w-full px-6 py-4 md:py-6 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] text-[1.8rem] md:text-[3.5rem] lg:text-[4.5rem] leading-[1.4] font-black tracking-wider text-center flex items-center justify-center whitespace-nowrap overflow-hidden";
-                card.style.color = currentBodyColor; 
-                
-                // Thẻ span sẽ chứa text để JS đo bề ngang gốc của chữ
-                let span = document.createElement('span');
-                span.innerText = w;
-                
-                card.appendChild(span);
-                wrapper.appendChild(card);
-                winnersContainer.appendChild(wrapper);
+                const racerContent = config.isSvg 
+                    ? `<div class="${config.iconClass}" style="width: 45px; height: 45px; display:inline-block;">${config.emoji}</div>`
+                    : `<div class="${config.iconClass}" style="font-size: 2rem;">${config.emoji}</div>`;
+
+                el.innerHTML = `
+                    <div class="text-[10px] font-bold bg-black/70 px-2 py-0.5 rounded-md text-white shadow-md mb-1 whitespace-nowrap border border-white/10">${h.name}</div>
+                    <div class="racer-wrapper static">
+                        <div class="${config.effectClass}"></div>
+                        <div class="speed-trail trail-1"></div><div class="speed-trail trail-2"></div><div class="speed-trail trail-3"></div>
+                        ${racerContent}
+                    </div>
+                `;
+                arena.appendChild(el);
             });
 
-            // 2. Global Scaling: Đo chữ dài nhất và ép TẤT CẢ các khung về cùng 1 size chữ
-            requestAnimationFrame(() => {
-                let cards = winnersContainer.querySelectorAll('.winner-card');
-                if (cards.length === 0) return;
-                
-                let minSize = Infinity;
-                
-                cards.forEach(card => {
-                    let span = card.querySelector('span');
-                    let style = window.getComputedStyle(card);
-                    
-                    // Khoảng không gian an toàn bên trong card
-                    let paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-                    let availableW = card.clientWidth - paddingX;
-                    
-                    let textW = span.scrollWidth;
-                    let currentSize = parseFloat(style.fontSize);
-                    
-                    if (textW > availableW && textW > 0) {
-                        let neededSize = currentSize * (availableW / textW) * 0.95; 
-                        if (neededSize < minSize) minSize = neededSize;
-                    } else {
-                        if (currentSize < minSize) minSize = currentSize;
+            currentWinners = [];
+            const durationSec = parseFloat(document.getElementById('raceDuration').value) || 10;
+            let timeLeft = durationSec;
+            
+            let targetTopN = parseInt(document.getElementById('topN').value) || 1;
+            targetTopN = Math.max(1, Math.min(targetTopN, 20, horses.length));
+            document.getElementById('topN').value = targetTopN;
+            
+            const targetId = targetWinnerSelect.value;
+            const fps = 30; const tick = 1000/fps;
+
+            countdownEl.innerText = Math.ceil(timeLeft);
+
+            raceInterval = setInterval(() => {
+                horses.forEach(h => {
+                    h.vx += (Math.random() - 0.5) * 0.3; h.vy += (Math.random() - 0.5) * 0.3;
+                    const maxSpeed = 1.2;
+                    if (h.vx > maxSpeed) h.vx = maxSpeed; if (h.vx < -maxSpeed) h.vx = -maxSpeed;
+                    if (h.vy > maxSpeed) h.vy = maxSpeed; if (h.vy < -maxSpeed) h.vy = -maxSpeed;
+
+                    h.x += h.vx; h.y += h.vy;
+                    if (h.x <= 0) { h.x = 0; h.vx *= -1; } if (h.x >= 92) { h.x = 92; h.vx *= -1; }
+                    if (h.y <= 0) { h.y = 0; h.vy *= -1; } if (h.y >= 85) { h.y = 85; h.vy *= -1; }
+
+                    const el = document.getElementById(`horse-ui-${h.id}`);
+                    if (el) {
+                        el.style.left = `${h.x}%`; el.style.top = `${h.y}%`;
                     }
                 });
 
-                if (minSize !== Infinity) {
-                    cards.forEach(card => {
-                        card.style.setProperty('font-size', `${minSize}px`, 'important');
-                    });
+                timeLeft -= (tick / 1000);
+                countdownEl.innerText = Math.ceil(timeLeft);
+
+                if (timeLeft <= 2.0 && !isTurboActivated) {
+                    isTurboActivated = true;
+                    const dangerBorder = document.getElementById('dangerBorder');
+                    if (dangerBorder) {
+                        dangerBorder.style.boxShadow = "inset 0 0 120px rgba(244, 63, 94, 0.6)";
+                        setInterval(() => { dangerBorder.style.opacity = dangerBorder.style.opacity == "0" ? "1" : "0"; }, 250);
+                    }
+                    countdownEl.style.color = "rgba(244, 63, 94, 0.2)";
+
+                    if (targetId !== "random") {
+                        const vipEl = document.getElementById(`horse-ui-${targetId}`);
+                        if (vipEl) {
+                            vipEl.classList.add('vip-turbo');
+                            arena.appendChild(vipEl);
+                        }
+                    }
                 }
+
+                // ================= KHI HẾT GIỜ =================
+                if (timeLeft <= 0) {
+                    clearInterval(raceInterval);
+                    bgMusic.pause(); 
+                    if(winAudio) { winAudio.currentTime = 0; winAudio.play().catch(e=>console.log(e)); }
+
+                    countdownEl.innerText = "HẾT GIỜ!";
+                    countdownEl.style.color = "rgba(255, 255, 255, 0.6)";
+                    if (document.getElementById('dangerBorder')) document.getElementById('dangerBorder').style.display = 'none';
+                    
+                    arena.style.background = "radial-gradient(circle at center, rgba(56, 189, 248, 0.1) 0%, rgba(3, 7, 18, 0.9) 100%)";
+
+                    let pool = horses.map(h => h); 
+                    currentWinners = [];
+                    
+                    if (targetId !== "random") {
+                        const vipIndex = pool.findIndex(x => x.id == targetId);
+                        if (vipIndex !== -1) { currentWinners.push(pool[vipIndex]); pool.splice(vipIndex, 1); }
+                    }
+                    while(currentWinners.length < targetTopN && pool.length > 0) {
+                        const randIdx = Math.floor(Math.random() * pool.length);
+                        currentWinners.push(pool[randIdx]); pool.splice(randIdx, 1);
+                    }
+
+                    let baseNow = Date.now();
+                    currentWinners.forEach((cw, idx) => { cw.exactTimeDate = new Date(baseNow + (idx * 25)); });
+
+                    horses.forEach(h => {
+                        const el = document.getElementById(`horse-ui-${h.id}`);
+                        if (el) {
+                            const icon = el.querySelector('.racer-icon, .racer-icon-flip, .racer-icon-bird');
+                            if(icon) icon.style.transform = ''; 
+
+                            if (currentWinners.find(w => w.id === h.id)) {
+                                const winIndex = currentWinners.findIndex(w => w.id === h.id);
+                                el.classList.remove('vip-turbo'); 
+                                el.classList.add('winner-pop'); 
+                                
+                                const totalWins = currentWinners.length;
+                                const gap = totalWins > 5 ? (80 / totalWins) : 15; 
+                                const offset = (winIndex - (totalWins - 1) / 2) * gap;
+                                
+                                el.style.left = `calc(50% + ${offset}%)`;
+                                el.style.top = '50%';
+                                el.style.transform = `translate(-50%, -50%) scale(${totalWins > 5 ? 1.5 : 2.5})`;
+                                arena.appendChild(el); 
+                            } else {
+                                el.classList.add('loser-fade');
+                            }
+                        }
+                    });
+
+                    setTimeout(() => {
+                        saveHistory(currentWinners); showWinners(currentWinners); 
+                    }, 3500);
+                }
+            }, tick);
+        }
+
+        // =========================================================================
+
+        function saveHistory(winnersList) {
+            const emptyMsg = document.getElementById('emptyHistoryMsg'); if (emptyMsg) emptyMsg.remove();
+            const winnerNamesText = winnersList.map((w, index) => `${index + 1}. ${w.name}`).join(' • ');
+            const item = document.createElement('div'); item.className = "flex flex-col bg-black/20 p-3 rounded-xl border border-white/5 text-xs mb-2";
+            item.innerHTML = `
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold theme-text">Vòng ${roundNumber}</span>
+                    <span class="text-[10px] text-muted">Đã ghi nhận</span>
+                </div>
+                <div class="font-semibold text-white/90 truncate">${winnerNamesText}</div>
+            `;
+            historyList.prepend(item); 
+            winnersList.forEach((w, index) => {
+                const timeWithMs = formatExactTime(w.exactTimeDate);
+                raceHistory.push({ round: roundNumber, rank: index + 1, name: w.name, time: timeWithMs });
             });
-
-            document.getElementById('action-buttons-bar').style.display = 'flex';
-            confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } });
         }
 
-        function saveAndNext() {
-            let activeP = prizes.find(p => p.id == currentActivePrizeId); if (!activeP) return;
-            activeP.wonCount += tempCurrentRoundWinners.length;
-            allWinnersHistory.push({ prizeName: activeP.name, winners: [...tempCurrentRoundWinners], time: new Date().toLocaleTimeString() });
-            tempCurrentRoundWinners.forEach(winner => { pushWinnerToGoogleSheet(activeP.name, winner); });
-            savePrizesConfigToGoogleSheet();
-            tempCurrentRoundWinners = []; updatePrizeDropdown(); syncDisplayScreenInfo();
-            let toast = document.getElementById('save-status-toast'); toast.style.opacity = '1'; setTimeout(() => { toast.style.opacity = '0'; }, 2000);
-            
-            let rb = document.getElementById('display-roller-box');
-            rb.innerText = "SẴN SÀNG"; 
-            autoScaleFont(rb, '6rem');
-            
-            document.getElementById('display-winners-container').innerHTML = "";
-            document.getElementById('action-buttons-bar').style.display = 'none'; document.getElementById('start-draw-container').style.display = 'block';
+        function exportExcel() {
+            const eventName = document.getElementById('eventNameInput').value.trim() || "KetQua_Dua";
+            const safeFileName = eventName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+            if (raceHistory.length === 0) { alert("Chưa có dữ liệu!"); return; }
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFFVong Dua,Hang,Ten Nguoi Thang,Thoi Gian (Chinh xac Ms)\n";
+            raceHistory.forEach(row => { csvContent += `${row.round},${row.rank},"${row.name}","${row.time}"\n`; });
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); 
+            link.setAttribute("download", `${safeFileName}.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        function discardAndRetry() {
-            if (confirm('Bạn có chắc muốn huỷ kết quả lượt này và tiến hành quay lại giải này không?')) {
-                tempCurrentRoundWinners.forEach(w => drawnParticipants.delete(w)); tempCurrentRoundWinners = [];
-                let rb = document.getElementById('display-roller-box');
-                rb.innerText = "SẴN SÀNG"; 
-                autoScaleFont(rb, '6rem');
-                
-                document.getElementById('display-winners-container').innerHTML = "";
-                document.getElementById('action-buttons-bar').style.display = 'none'; document.getElementById('start-draw-container').style.display = 'block';
-            }
+        function showWinners(winnersList) {
+            document.getElementById('winRoundText').innerText = roundNumber;
+            const container = document.getElementById('winnersList'); container.innerHTML = ''; 
+            winnersList.forEach((w, index) => {
+                const rank = index + 1;
+                let rankDisplay = rank === 1 ? '🥇 Hạng 1' : rank === 2 ? '🥈 Hạng 2' : rank === 3 ? '🥉 Hạng 3' : `🏅 Hạng ${rank}`;
+                let colorClass = rank === 1 ? 'theme-text text-xl font-black' : 'text-white/80 text-sm font-bold';
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-black/30 p-3 rounded-xl border border-white/5">
+                        <span class="font-semibold text-muted text-xs w-20 text-left">${rankDisplay}</span>
+                        <div class="flex-1 text-left flex flex-col justify-center truncate px-2">
+                            <span class="${colorClass} truncate leading-tight">${w.name}</span>
+                            ${rank === 1 ? `<span class="text-[10px] text-muted mt-0.5 font-mono">🕒 ${formatExactTime(w.exactTimeDate)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            winnerModal.classList.replace('hidden', 'flex');
         }
 
-        function toggleFullScreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => {}); } else { if (document.exitFullscreen) { document.exitFullscreen(); } } }
-
-        function exportResult() {
-            if (allWinnersHistory.length === 0) { alert('Chưa có dữ liệu trúng thưởng nào được lưu!'); return; }
-            let csvContent = "\uFEFFThời gian;Giải thưởng;Người trúng thưởng\n";
-            allWinnersHistory.forEach(item => { item.winners.forEach(w => { csvContent += `"${item.time}";"${item.prizeName}";"${w}"\n`; }); });
-            let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "ket_qua_trung_thuong.csv"; a.click();
-        }
-
-        function resetWinnersOnly() { if (confirm('Reset danh sách trúng thưởng?')) { prizes.forEach(p => p.wonCount = 0); drawnParticipants.clear(); allWinnersHistory = []; tempCurrentRoundWinners = []; savePrizesConfigToGoogleSheet(); updatePrizeDropdown(); alert('Đã reset thành công!'); } }
+        function goToSetup() { clearInterval(raceInterval); bgMusic.pause(); winnerModal.classList.replace('flex', 'hidden'); racingMode.classList.replace('flex', 'hidden'); setupMode.classList.remove('hidden'); renderInputs(); }
         
-        function resetSystem() { 
-            if (confirm('Reset toàn bộ hệ thống?')) { 
-                prizes.forEach(p => p.wonCount = 0); allWinnersHistory = []; tempCurrentRoundWinners = []; drawnParticipants.clear(); savePrizesConfigToGoogleSheet(); updatePrizeDropdown(); 
-                let rb = document.getElementById('display-roller-box'); rb.innerText = "SẴN SÀNG"; autoScaleFont(rb, '6rem');
-                document.getElementById('display-winners-container').innerHTML = ""; document.getElementById('action-buttons-bar').style.display = 'none'; document.getElementById('start-draw-container').style.display = 'block'; 
-                alert('Đã reset hệ thống thành công!'); 
-            } 
+        function rematch() { 
+            const toRemove = raceHistory.filter(r => r.round === roundNumber).length;
+            raceHistory.splice(-toRemove, toRemove); 
+            if(historyList.firstChild) historyList.removeChild(historyList.firstChild);
+            if(raceHistory.length === 0) historyList.innerHTML = '<p class="text-muted text-xs text-center italic mt-6" id="emptyHistoryMsg">Chưa có kết quả ghi nhận</p>';
+            goToSetup(); 
         }
+        
+        function nextRound() {
+            const winnerIds = currentWinners.map(w => w.id);
+            horses = horses.filter(h => !winnerIds.includes(h.id));
+            document.getElementById('numHorses').value = horses.length;
+            roundNumber++; document.getElementById('roundCounterBadge').innerText = `Vòng ${roundNumber}`; goToSetup();
+        }
+
+        function toggleFullScreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e)); else document.exitFullscreen(); }
+        
+        updateEventName(document.getElementById('eventNameInput').value);
+        handleGenerateBtn();
     </script>
 </body>
 </html>
