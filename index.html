@@ -26,17 +26,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        /* Glass Panels cao cấp */
-        .glass-panel { background: rgba(11, 19, 38, 0.65); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); }
+        .glass-panel { background: rgba(11, 19, 38, 0.75); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
         .glass-panel-admin { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Input & Forms Admin */
         .admin-input { background: rgba(2, 6, 23, 0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #f8fafc; font-size: 0.875rem; transition: all 0.2s ease; outline: none; }
         .admin-input:focus { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); background: rgba(2, 6, 23, 0.8); }
         .admin-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.375rem; }
         
-        /* Chỉnh Color Picker cho sang trọng */
         input[type="color"] { -webkit-appearance: none; padding: 0; border: none; border-radius: 0.5rem; overflow: hidden; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.5rem; }
@@ -56,7 +52,6 @@
         .roller-wrapper { width: 100%; text-align: center; display: flex; justify-content: center; align-items: center; }
         .roller-slot { display: block; transition: transform 0.05s ease-in-out; white-space: nowrap; padding: 0.5rem 0; line-height: 1.4; will-change: transform; }
         .sync-title { color: var(--title-text-color, inherit) !important; }
-        .text-glow-premium { text-shadow: 0 0 12px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.4), 0 0 45px rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col p-4 md:p-6 transition-all duration-300 bg-cover bg-center bg-no-repeat relative overflow-x-hidden" style="font-family: 'Be Vietnam Pro', sans-serif;">
@@ -121,18 +116,13 @@
         <div id="tab-control" class="tab-content active w-full">
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
                 
-                <!-- Cột Trái (Cài đặt) -->
                 <div class="xl:col-span-8 space-y-6 lg:space-y-8">
-                    
                     <!-- Nguồn dữ liệu -->
                     <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
                         <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                                <span class="material-symbols-outlined text-[18px]">database</span>
-                            </div>
+                            <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400"><span class="material-symbols-outlined text-[18px]">database</span></div>
                             <h2 class="text-sm font-black uppercase tracking-[0.15em] text-indigo-100 sync-title">Nguồn Dữ Liệu Tham Gia</h2>
                         </div>
-                        
                         <div class="space-y-5">
                             <div>
                                 <label class="admin-label">Phương thức kết nối</label>
@@ -142,36 +132,25 @@
                                     <option value="file">📁 Tải lên tệp cục bộ (.CSV / .TXT)</option>
                                 </select>
                             </div>
-
                             <div id="source-google-box" class="p-5 bg-slate-900/40 rounded-2xl border border-indigo-500/20 relative overflow-hidden">
                                 <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                                 <label class="admin-label text-indigo-300">Google Apps Script Web App URL</label>
                                 <div class="flex flex-col sm:flex-row gap-3 mt-2">
                                     <input type="text" id="input-gsheet-url" value="https://script.google.com/macros/s/AKfycbyl3OnH8j8gEILpMSvkZd_z0l8pA5dgMIl6yF6icVyP-OaE3_Bq7NxZXqZLgDfJZwNZ/exec" class="w-full admin-input text-indigo-200 font-mono text-xs">
-                                    <button onclick="loadParticipantsFromGoogleSheet()" class="px-6 py-3 brand-btn font-bold rounded-xl whitespace-nowrap flex items-center justify-center gap-2">
-                                        <span class="material-symbols-outlined text-[18px]">sync</span> Đồng Bộ
-                                    </button>
+                                    <button onclick="loadParticipantsFromGoogleSheet()" class="px-6 py-3 brand-btn font-bold rounded-xl whitespace-nowrap flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px]">sync</span> Đồng Bộ</button>
                                 </div>
                                 <p id="sheet-status-info" class="text-xs text-emerald-400 font-medium mt-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Trạng thái: Đã sẵn sàng kết nối.</p>
                             </div>
-
                             <div id="source-number-box" style="display: none;" class="grid grid-cols-2 gap-4 p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
                                 <div><label class="admin-label">Từ số</label><input type="number" id="num-from" value="1" min="1" max="99999999" class="w-full admin-input font-mono"></div>
                                 <div><label class="admin-label">Đến số</label><input type="number" id="num-to" value="99999999" min="1" max="99999999" class="w-full admin-input font-mono"></div>
                             </div>
-
                             <div id="source-file-box" style="display: none;" class="p-5 bg-slate-900/40 rounded-2xl border border-slate-700/50">
-                                <div class="flex justify-between items-center mb-3">
-                                    <label class="admin-label mb-0">Tải lên danh sách</label>
-                                    <button onclick="downloadSampleCSV()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">download</span> File Mẫu</button>
-                                </div>
+                                <div class="flex justify-between items-center mb-3"><label class="admin-label mb-0">Tải lên danh sách</label><button onclick="downloadSampleCSV()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">download</span> File Mẫu</button></div>
                                 <input type="file" id="import-file" accept=".txt,.csv" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer transition">
                             </div>
-
                             <div class="pt-2">
-                                <button onclick="confirmDataSource()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span> Chốt Nguồn Dữ Liệu
-                                </button>
+                                <button onclick="confirmDataSource()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700"><span class="material-symbols-outlined text-[18px]">lock</span> Chốt Nguồn Dữ Liệu</button>
                                 <p id="confirmed-source-status" class="text-xs text-slate-500 mt-2 text-center">Bạn cần chốt dữ liệu trước khi quay.</p>
                             </div>
                         </div>
@@ -180,124 +159,72 @@
                     <!-- Brand Guidelines -->
                     <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6">
                         <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400">
-                                <span class="material-symbols-outlined text-[18px]">palette</span>
-                            </div>
+                            <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400"><span class="material-symbols-outlined text-[18px]">palette</span></div>
                             <h2 class="text-sm font-black uppercase tracking-[0.15em] text-rose-100 sync-title">Brand Guidelines & Giao Diện</h2>
                         </div>
-                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                             <div><label class="admin-label">Loại Background</label><select id="bg-type" onchange="toggleBgInputs()" class="w-full admin-input cursor-pointer"><option value="solid">Màu Solid (Trơn)</option><option value="gradient">Màu Gradient (Chuyển sắc)</option><option value="image">Hình Ảnh (16:9)</option></select></div>
                             <div><label class="admin-label">Phông chữ hiển thị</label><select id="custom-font-family" class="w-full admin-input cursor-pointer"><option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro (Chuẩn TV)</option><option value="'Inter', sans-serif">Inter (Hiện đại)</option></select></div>
-                            
                             <div id="bg-solid-box"><label class="admin-label">Màu nền chính</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-bg-solid" value="#090d16" class="w-full h-full"></div></div>
-                            <div id="bg-gradient-box" style="display: none;" class="grid grid-cols-2 gap-3">
-                                <div><label class="admin-label">Màu bắt đầu</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-1" value="#0f172a" class="w-full h-full"></div></div>
-                                <div><label class="admin-label">Màu kết thúc</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-2" value="#311042" class="w-full h-full"></div></div>
-                            </div>
+                            <div id="bg-gradient-box" style="display: none;" class="grid grid-cols-2 gap-3"><div><label class="admin-label">Màu bắt đầu</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-1" value="#0f172a" class="w-full h-full"></div></div><div><label class="admin-label">Màu kết thúc</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="grad-2" value="#311042" class="w-full h-full"></div></div></div>
                             <div id="bg-image-box" style="display: none;"><label class="admin-label">Ảnh nền (16:9)</label><input type="file" id="custom-bg-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-800 file:text-white cursor-pointer mt-1"></div>
-                            
                             <div><label class="admin-label">Màu chữ (Tiêu đề)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-title-color" value="#f8fafc" class="w-full h-full"></div></div>
                             <div><label class="admin-label">Màu chữ (Nội dung)</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-text-color" value="#f8fafc" class="w-full h-full"></div></div>
-                            
                             <div><label class="admin-label">Màu nút tương tác</label><div class="h-11 bg-slate-900/50 rounded-xl p-1 border border-slate-700/50"><input type="color" id="custom-brand-btn-color" value="#4f46e5" class="w-full h-full"></div></div>
                             <div><label class="admin-label">Thời gian lướt số (Giây)</label><input type="number" id="input-spin-duration" min="1" max="15" value="3" class="w-full admin-input font-bold text-center"></div>
-                            
                             <div class="md:col-span-2 pt-2 pb-2"><label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="auto-text-contrast" checked class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500"><span class="text-sm font-semibold text-slate-300">Tự động cân đối tương phản màu chữ với nền</span></label></div>
-                            
                             <div class="md:col-span-2"><label class="admin-label">Upload Logo Sự Kiện (Tùy chọn)</label><input type="file" id="custom-logo-file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 cursor-pointer"></div>
                         </div>
-                        
-                        <button onclick="applyBrandGuidelines()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 shadow-lg">
-                            <span class="material-symbols-outlined text-[18px]">format_paint</span> Lưu & Áp Dụng Nhận Diện Thương Hiệu
-                        </button>
+                        <button onclick="applyBrandGuidelines()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition flex justify-center items-center gap-2 shadow-lg"><span class="material-symbols-outlined text-[18px]">format_paint</span> Lưu & Áp Dụng Nhận Diện Thương Hiệu</button>
                     </div>
 
                     <!-- Quản lý Giải thưởng -->
                     <div class="glass-panel-admin p-6 md:p-8 rounded-3xl space-y-4">
                         <div class="flex justify-between items-center border-b border-slate-700/50 pb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400"><span class="material-symbols-outlined text-[18px]">emoji_events</span></div>
-                                <h2 class="text-sm font-black uppercase tracking-[0.15em] text-amber-100 sync-title">Cơ Cấu Giải Thưởng</h2>
-                            </div>
+                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400"><span class="material-symbols-outlined text-[18px]">emoji_events</span></div><h2 class="text-sm font-black uppercase tracking-[0.15em] text-amber-100 sync-title">Cơ Cấu Giải Thưởng</h2></div>
                             <button onclick="addPrizeRow()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1 border border-slate-700"><span class="material-symbols-outlined text-[16px]">add</span> Thêm Giải</button>
                         </div>
-                        
                         <div class="overflow-x-auto mt-4">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
-                                        <th class="pb-3 font-semibold pl-2">Tên Giải Thưởng</th>
-                                        <th class="pb-3 font-semibold w-28 text-center">Tổng Giải</th>
-                                        <th class="pb-3 font-semibold w-32 text-center">Quay Mỗi Lượt</th>
-                                        <th class="pb-3 font-semibold w-16 text-center">Xóa</th>
+                                        <th class="pb-3 font-semibold pl-2">Tên Giải Thưởng</th><th class="pb-3 font-semibold w-28 text-center">Tổng Giải</th><th class="pb-3 font-semibold w-32 text-center">Quay Mỗi Lượt</th><th class="pb-3 font-semibold w-16 text-center">Xóa</th>
                                     </tr>
                                 </thead>
                                 <tbody id="prizes-table-body" class="divide-y divide-slate-800/50"></tbody>
                             </table>
                         </div>
-                        
-                        <div class="pt-4">
-                            <button onclick="savePrizesConfig()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition border border-slate-700 flex justify-center items-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Đồng bộ cấu hình lên Cloud (Sheets)
-                            </button>
-                        </div>
+                        <div class="pt-4"><button onclick="savePrizesConfig()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition border border-slate-700 flex justify-center items-center gap-2"><span class="material-symbols-outlined text-[18px]">cloud_upload</span> Đồng bộ cấu hình lên Cloud (Sheets)</button></div>
                     </div>
                 </div>
 
                 <!-- Cột Phải (Control Center - Sticky) -->
                 <div class="xl:col-span-4 relative">
                     <div class="sticky top-6 glass-panel-admin p-6 md:p-8 rounded-3xl space-y-6 shadow-2xl border-t border-indigo-500/30">
-                        
                         <div class="flex items-center gap-3 border-b border-slate-700/50 pb-4">
-                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                                <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
-                            </div>
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400"><span class="material-symbols-outlined text-[18px]">rocket_launch</span></div>
                             <h2 class="text-sm font-black uppercase tracking-[0.15em] text-emerald-100 sync-title">Trung Tâm Điều Khiển</h2>
                         </div>
-
                         <div class="space-y-5">
-                            <div>
-                                <label class="admin-label">Tên Sự Kiện Hiển Thị</label>
-                                <input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo(); savePrizesConfigToGoogleSheet();" class="w-full admin-input font-bold text-indigo-300">
-                            </div>
-                            
+                            <div><label class="admin-label">Tên Sự Kiện Hiển Thị</label><input type="text" id="input-event-name" value="TECH SUMMIT 2026" onchange="syncDisplayScreenInfo(); savePrizesConfigToGoogleSheet();" class="w-full admin-input font-bold text-indigo-300"></div>
                             <div>
                                 <label class="admin-label text-amber-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">target</span> Chế Độ Quay Hiện Tại</label>
-                                <div class="relative">
-                                    <select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full admin-input py-4 font-black text-white bg-indigo-950/40 border-indigo-500/50 focus:border-indigo-400 cursor-pointer appearance-none pl-4 pr-10"></select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"><span class="material-symbols-outlined">expand_more</span></div>
-                                </div>
+                                <div class="relative"><select id="select-active-prize" onchange="onSelectedPrizeChange()" class="w-full admin-input py-4 font-black text-white bg-indigo-950/40 border-indigo-500/50 focus:border-indigo-400 cursor-pointer appearance-none pl-4 pr-10"></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"><span class="material-symbols-outlined">expand_more</span></div></div>
                             </div>
-                            
                             <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
-                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tổng ngân sách giải:</span> <span id="info-total-prize" class="font-black text-lg text-amber-400">1</span></div>
-                                <div class="w-full h-[1px] bg-slate-800"></div>
-                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tiến độ trao giải:</span> <span id="info-won-prize" class="font-black text-lg text-emerald-400">0 / 1</span></div>
-                                <div class="w-full h-[1px] bg-slate-800"></div>
+                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tổng ngân sách giải:</span> <span id="info-total-prize" class="font-black text-lg text-amber-400">1</span></div><div class="w-full h-[1px] bg-slate-800"></div>
+                                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Tiến độ trao giải:</span> <span id="info-won-prize" class="font-black text-lg text-emerald-400">0 / 1</span></div><div class="w-full h-[1px] bg-slate-800"></div>
                                 <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Số suất quay/lượt:</span> <span id="info-per-draw" class="font-black text-lg text-indigo-400">1</span></div>
                             </div>
                         </div>
-
                         <div class="pt-4 space-y-3">
-                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn py-5 rounded-2xl font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)]">
-                                <span class="material-symbols-outlined">smart_display</span> MỞ MÀN HÌNH QUAY
-                            </button>
-                            
-                            <button onclick="exportResult()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700">
-                                <span class="material-symbols-outlined text-[18px]">download</span> Tải Báo Cáo KQ (CSV)
-                            </button>
-                            
+                            <button onclick="goToDisplayAndReady()" class="w-full brand-btn py-5 rounded-2xl font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)]"><span class="material-symbols-outlined">smart_display</span> MỞ MÀN HÌNH QUAY</button>
+                            <button onclick="exportResult()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex justify-center items-center gap-2 border border-slate-700"><span class="material-symbols-outlined text-[18px]">download</span> Tải Báo Cáo KQ (CSV)</button>
                             <div class="grid grid-cols-2 gap-3 pt-2">
-                                <button onclick="resetWinnersOnly()" class="py-3 bg-amber-950/30 hover:bg-amber-900/50 text-amber-400 text-xs font-bold rounded-xl transition border border-amber-900/50 flex flex-col items-center justify-center gap-1">
-                                    <span class="material-symbols-outlined text-[16px]">restart_alt</span> Khôi phục KQ
-                                </button>
-                                <button onclick="resetSystem()" class="py-3 bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs font-bold rounded-xl transition border border-rose-900/50 flex flex-col items-center justify-center gap-1">
-                                    <span class="material-symbols-outlined text-[16px]">power_settings_new</span> Reset Hệ Thống
-                                </button>
+                                <button onclick="resetWinnersOnly()" class="py-3 bg-amber-950/30 hover:bg-amber-900/50 text-amber-400 text-xs font-bold rounded-xl transition border border-amber-900/50 flex flex-col items-center justify-center gap-1"><span class="material-symbols-outlined text-[16px]">restart_alt</span> Khôi phục KQ</button>
+                                <button onclick="resetSystem()" class="py-3 bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs font-bold rounded-xl transition border border-rose-900/50 flex flex-col items-center justify-center gap-1"><span class="material-symbols-outlined text-[16px]">power_settings_new</span> Reset Hệ Thống</button>
                             </div>
                         </div>
-                        
                     </div>
                 </div>
             </div>
@@ -315,18 +242,18 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
                         <span id="display-event-badge" class="font-bold text-xs uppercase tracking-[0.3em] text-indigo-300 cursor-pointer sync-title" ondblclick="openSecretWinnerModal()">LUCKY DRAW</span>
                     </div>
-                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-black tracking-tight text-white text-center text-glow-premium">Tên Giải Thưởng</h2>
+                    <h2 id="disp-active-name" class="text-3xl md:text-5xl font-black tracking-tight text-white text-center">Tên Giải Thưởng</h2>
                 </div>
 
-                <!-- KHU VỰC TRUNG TÂM: CHỮ LUÔN ĐỒNG BỘ -->
+                <!-- KHU VỰC TRUNG TÂM -->
                 <div class="flex-grow flex flex-col items-center justify-center gap-8 w-full relative z-10 py-8">
                     <div id="roller-wrapper" class="roller-wrapper px-4 min-h-[140px] md:min-h-[160px]">
-                        <div id="display-roller-box" class="roller-slot font-black tracking-widest text-white text-glow-premium" style="font-size: 5.5rem;">
+                        <div id="display-roller-box" class="roller-slot font-black tracking-widest text-white" style="font-size: 5.5rem;">
                             SẴN SÀNG
                         </div>
                     </div>
-                    <!-- Danh sách khung đồng bộ -->
-                    <div id="display-winners-container" class="flex flex-col justify-center items-center gap-5 w-full pt-2 pb-6 px-2"></div>
+                    <!-- Danh sách khung thẻ tên -->
+                    <div id="display-winners-container" class="flex flex-col justify-center items-center gap-5 w-full pt-2 pb-6 px-2 transition-opacity duration-300"></div>
                 </div>
 
                 <!-- Cụm Action Buttons -->
@@ -371,7 +298,7 @@
         <span id="footer-event-name">© 2026 TECH SUMMIT 2026 - LUCKY DRAW PLATFORM</span>
     </footer>
 
-    <!-- Script Xử Lý Logic (Hoàn Hảo 100%) -->
+    <!-- Script Xử Lý Logic Cốt Lõi -->
     <script>
         let prizes = [{ id: 1, name: "MacBook Pro M4", total: 1, perDraw: 1, wonCount: 0 }];
         let participants = []; let drawnParticipants = new Set(); let allWinnersHistory = [];
@@ -426,7 +353,6 @@
             let rb = document.getElementById('display-roller-box');
             if(rb && (rb.innerText === "SẴN SÀNG" || isRunning)) { autoScaleFont(rb, '6rem'); }
             
-            // Re-scale các thẻ tên nếu đang resize màn hình lúc có kết quả
             let winnersContainer = document.getElementById('display-winners-container');
             if(winnersContainer.children.length > 0) {
                 let cards = winnersContainer.querySelectorAll('.winner-card');
@@ -726,21 +652,46 @@
             });
         }
 
-        function startSpinningAnimation() {
+        // --- CƠ CHẾ LOẠI NGƯỜI (NÚT X) ---
+        window.removeAndRespin = function(index) {
+            if(!confirm("Xác nhận loại người vắng mặt này và quay thế chỗ 1 người?")) return;
+            // Xóa người này khỏi kết quả hiện tại (nhưng vẫn nằm trong drawnParticipants để bị chặn quay trúng lần 2)
+            tempCurrentRoundWinners.splice(index, 1);
+            // Kích hoạt lại vòng quay, truyền tham số isRespinCount = 1
+            startSpinningAnimation(1);
+        }
+
+        function startSpinningAnimation(respinCount = 0) {
             if (isRunning) return;
             let activeP = prizes.find(p => p.id == currentActivePrizeId); if (!activeP) return;
-            if (activeP.wonCount >= activeP.total) { alert(`Giải "${activeP.name}" đã trao đủ số lượng!`); return; }
+            
+            // Chỉ kiểm tra hết giải nếu là vòng quay mới
+            if (respinCount === 0) {
+                if (activeP.wonCount >= activeP.total) { alert(`Giải "${activeP.name}" đã trao đủ số lượng!`); return; }
+                tempCurrentRoundWinners = []; // Xóa kết quả tạm của vòng trước
+            }
 
             let availablePool = sourceMode === 'number' ? [] : participants.filter(p => !drawnParticipants.has(p));
             if (sourceMode !== 'number' && availablePool.length === 0) { alert("⚠️ Không còn ai trong danh sách để quay!"); return; }
 
             document.getElementById('start-draw-container').style.display = 'none'; 
             document.getElementById('action-buttons-bar').style.display = 'none'; 
-            document.getElementById('display-winners-container').innerHTML = '';
+            
+            let winnersContainer = document.getElementById('display-winners-container');
+            if (respinCount === 0) {
+                winnersContainer.innerHTML = '';
+            } else {
+                // Nếu đang quay bổ sung -> Làm mờ danh sách cũ và vô hiệu hóa nút X tạm thời
+                winnersContainer.style.opacity = '0.2';
+                winnersContainer.style.pointerEvents = 'none';
+            }
             
             isRunning = true; 
             let rollerBox = document.getElementById('display-roller-box');
-            let countToDraw = Math.min(activeP.perDraw, activeP.total - activeP.wonCount);
+            rollerBox.innerHTML = "SẴN SÀNG"; 
+            autoScaleFont(rollerBox, '6rem');
+            
+            let countToDraw = respinCount > 0 ? respinCount : Math.min(activeP.perDraw, activeP.total - activeP.wonCount);
             let durationSec = parseFloat(document.getElementById('input-spin-duration').value) || 3;
             let durationMs = durationSec * 1000;
             
@@ -782,15 +733,29 @@
         }
 
         function finalizeRound(countToDraw, availablePool) {
-            isRunning = false; playSound('win'); tempCurrentRoundWinners = [];
-            if (forcedSecretWinner && countToDraw === 1) { tempCurrentRoundWinners.push(forcedSecretWinner); drawnParticipants.add(forcedSecretWinner); forcedSecretWinner = ""; } else {
+            isRunning = false; playSound('win'); 
+            
+            // Xử lý bốc thăm bổ sung và dồn vào tempCurrentRoundWinners
+            if (forcedSecretWinner && countToDraw === 1) { 
+                tempCurrentRoundWinners.push(forcedSecretWinner); 
+                drawnParticipants.add(forcedSecretWinner); 
+                forcedSecretWinner = ""; 
+            } else {
                 if (sourceMode === 'number') {
                     let from = parseInt(document.getElementById('num-from').value) || 1; let to = Math.min(99999999, parseInt(document.getElementById('num-to').value) || 99999999);
                     let pool = []; for(let i=from; i<=to; i++) pool.push(String(i).padStart(Math.min(8, String(to).length), '0'));
-                    for(let i=0; i<countToDraw; i++) { if(pool.length === 0) break; tempCurrentRoundWinners.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); }
+                    for(let i=0; i<countToDraw; i++) { 
+                        if(pool.length === 0) break; 
+                        tempCurrentRoundWinners.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); 
+                    }
                 } else {
                     let pool = [...availablePool];
-                    for(let i=0; i<countToDraw; i++) { if(pool.length === 0) break; let winner = pool.splice(Math.floor(Math.random() * pool.length), 1)[0]; tempCurrentRoundWinners.push(winner); drawnParticipants.add(winner); }
+                    for(let i=0; i<countToDraw; i++) { 
+                        if(pool.length === 0) break; 
+                        let winner = pool.splice(Math.floor(Math.random() * pool.length), 1)[0]; 
+                        tempCurrentRoundWinners.push(winner); 
+                        drawnParticipants.add(winner); 
+                    }
                 }
             }
 
@@ -799,28 +764,36 @@
             rb.innerHTML = `<span class="text-xl md:text-3xl font-extrabold tracking-widest uppercase text-emerald-400 mb-4 inline-block">🎉 CHÚC MỪNG NGƯỜI TRÚNG GIẢI 🎉</span>`;
             
             let currentBodyColor = window.getComputedStyle(document.getElementById('app-body')).color;
-            let winnersContainer = document.getElementById('display-winners-container'); winnersContainer.innerHTML = "";
+            let winnersContainer = document.getElementById('display-winners-container'); 
+            winnersContainer.innerHTML = "";
+            winnersContainer.style.opacity = '1';
+            winnersContainer.style.pointerEvents = 'auto'; // Mở lại tương tác
 
-            // 1. Tạo HTML cho tất cả thẻ với cấu trúc giúp đo kích thước chuẩn nhất
-            tempCurrentRoundWinners.forEach(w => {
+            // Render lại toàn bộ kết quả hiện tại
+            tempCurrentRoundWinners.forEach((w, index) => {
                 let wrapper = document.createElement('div');
-                wrapper.className = "w-full max-w-[95%] md:max-w-[85%] lg:max-w-[75%] flex justify-center items-center";
+                wrapper.className = "w-full max-w-[95%] md:max-w-[85%] lg:max-w-[75%] flex justify-center items-center relative";
                 
                 let card = document.createElement('div');
-                // w-full giúp kích thước khung của tất cả mọi người là bằng nhau (được giới hạn bởi wrapper bên ngoài)
-                card.className = "winner-card w-full px-6 py-4 md:py-6 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] text-[1.8rem] md:text-[3.5rem] lg:text-[4.5rem] leading-[1.4] font-black tracking-wider text-center flex items-center justify-center whitespace-nowrap overflow-hidden";
+                card.className = "winner-card relative w-full pl-6 pr-14 md:pl-10 md:pr-24 py-4 md:py-6 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] text-[1.8rem] md:text-[3.5rem] lg:text-[4.5rem] leading-[1.4] font-black tracking-wider text-center flex items-center justify-center whitespace-nowrap overflow-hidden";
                 card.style.color = currentBodyColor; 
                 
-                // Thẻ span sẽ chứa text để JS đo bề ngang gốc của chữ
                 let span = document.createElement('span');
                 span.innerText = w;
-                
                 card.appendChild(span);
+                
+                // NÚT "X" ĐỂ LOẠI NGƯỜI VẮNG MẶT
+                let closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] md:text-[28px] group-hover:rotate-90 transition-transform duration-300">close</span>';
+                closeBtn.className = "absolute right-3 md:right-5 top-1/2 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 rounded-full bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer z-20 group";
+                closeBtn.onclick = () => removeAndRespin(index);
+                card.appendChild(closeBtn);
+
                 wrapper.appendChild(card);
                 winnersContainer.appendChild(wrapper);
             });
 
-            // 2. Global Scaling: Đo chữ dài nhất và ép TẤT CẢ các khung về cùng 1 size chữ
+            // Global Scaling: Cân bằng font size
             requestAnimationFrame(() => {
                 let cards = winnersContainer.querySelectorAll('.winner-card');
                 if (cards.length === 0) return;
@@ -831,7 +804,6 @@
                     let span = card.querySelector('span');
                     let style = window.getComputedStyle(card);
                     
-                    // Khoảng không gian an toàn bên trong card
                     let paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
                     let availableW = card.clientWidth - paddingX;
                     
